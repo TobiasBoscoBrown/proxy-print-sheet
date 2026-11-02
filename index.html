@@ -1,0 +1,933 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body><script>
+window.__SYM = {};
+window.__symReady = (async () => {
+  const M = {"{T}":"T","{Q}":"Q","{E}":"E","{P}":"P","{PW}":"PW","{CHAOS}":"CHAOS","{TK}":"TK","{X}":"X","{0}":"0","{1}":"1","{2}":"2","{3}":"3","{4}":"4","{5}":"5","{6}":"6","{7}":"7","{8}":"8","{9}":"9","{10}":"10","{11}":"11","{12}":"12","{13}":"13","{14}":"14","{15}":"15","{16}":"16","{17}":"17","{18}":"18","{19}":"19","{20}":"20","{W/U}":"WU","{W/B}":"WB","{B/R}":"BR","{B/G}":"BG","{U/B}":"UB","{U/R}":"UR","{R/G}":"RG","{R/W}":"RW","{G/W}":"GW","{G/U}":"GU","{B/G/P}":"BGP","{B/R/P}":"BRP","{G/U/P}":"GUP","{G/W/P}":"GWP","{R/G/P}":"RGP","{R/W/P}":"RWP","{U/B/P}":"UBP","{U/R/P}":"URP","{W/B/P}":"WBP","{W/U/P}":"WUP","{C/W}":"CW","{C/U}":"CU","{C/B}":"CB","{C/R}":"CR","{C/G}":"CG","{2/W}":"2W","{2/U}":"2U","{2/B}":"2B","{2/R}":"2R","{2/G}":"2G","{H}":"H","{W/P}":"WP","{U/P}":"UP","{B/P}":"BP","{R/P}":"RP","{G/P}":"GP","{W}":"W","{U}":"U","{B}":"B","{R}":"R","{G}":"G","{C}":"C","{S}":"S"};
+  await Promise.all(Object.entries(M).map(async ([k, f]) => {
+    try { const r = await fetch("https://svgs.scryfall.io/card-symbols/" + f + ".svg"); if (r.ok) window.__SYM[k] = await r.text(); } catch {}
+  }));
+})();
+</script>
+<title>Proxy Print Sheet</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Familjen+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500&family=Crimson+Pro:ital,wght@0,400;1,400&family=EB+Garamond:ital,wght@0,400;1,400&family=Cinzel:wght@400;700&display=swap">
+<style>
+/* Layout: a print-shop bench. Controls on the left, live sheet previews laid on a cutting mat on the right. */
+:root{
+  --bg:#eef0ea; --panel:#ffffff; --ink:#1d2420; --muted:#5d6b63; --line:#d5dbd3;
+  --mat:#2f6b4f; --mat-line:rgba(255,255,255,.14); --mat-ink:#e4f2ea;
+  --accent:#d9472b; --accent-ink:#ffffff; --chip:#e5e9e2; --sheet:#ffffff;
+  --display:"Bungee","Arial Black",system-ui,sans-serif;
+  --body:"Familjen Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111613; --panel:#19201c; --ink:#e6ece8; --muted:#97a69d; --line:#2b352f;
+  --mat:#1d4a36; --mat-line:rgba(255,255,255,.10); --mat-ink:#cfe6da;
+  --accent:#f0694c; --accent-ink:#1a0e0a; --chip:#232c27; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111613; --panel:#19201c; --ink:#e6ece8; --muted:#97a69d; --line:#2b352f;
+  --mat:#1d4a36; --mat-line:rgba(255,255,255,.10); --mat-ink:#cfe6da;
+  --accent:#f0694c; --accent-ink:#1a0e0a; --chip:#232c27; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header h1{font:400 clamp(1.7rem,4vw,2.4rem)/1.05 var(--display);margin:0;letter-spacing:.5px;text-wrap:balance}
+header p{margin:6px 0 0;color:var(--muted);max-width:62ch}
+.spec{font:500 .78rem var(--mono);color:var(--muted);letter-spacing:.04em}
+.grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:14px;min-width:0}
+h2{font:700 .8rem var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:18px 14px;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center;transition:border-color .15s,background .15s}
+.drop.over{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.drop small{color:var(--muted)}
+button,.btn{font:600 .95rem var(--body);border-radius:10px;border:1px solid var(--line);background:var(--chip);color:var(--ink);padding:9px 14px;cursor:pointer}
+button:hover,.btn:hover{border-color:var(--muted)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,select:focus-visible,.btn:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.items{display:flex;flex-direction:column;gap:10px}
+.item{display:grid;grid-template-columns:56px minmax(0,1fr);gap:10px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:10px}
+.item img{width:56px;height:78px;object-fit:cover;border-radius:3px;display:block;background:var(--chip)}
+.item .meta{display:flex;flex-direction:column;gap:6px;min-width:0}
+.item .name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .tag{font:500 .7rem var(--mono);color:var(--accent);letter-spacing:.06em;text-transform:uppercase}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.stepper button{border:0;border-radius:0;padding:5px 11px;background:var(--chip)}
+.stepper output{min-width:2.4ch;text-align:center;font:500 .9rem var(--mono)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{border:0;border-radius:0;padding:5px 10px;font-size:.85rem;background:transparent}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.small{padding:5px 9px;font-size:.85rem}
+.settings{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px 12px;align-items:center}
+.settings label{font-weight:600;font-size:.92rem}
+select{font:500 .95rem var(--body);padding:7px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--ink);min-width:0;width:100%}
+.mat{background-color:var(--mat);background-image:linear-gradient(var(--mat-line) 1px,transparent 1px),linear-gradient(90deg,var(--mat-line) 1px,transparent 1px);background-size:24px 24px;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.mat .top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center;color:var(--mat-ink)}
+.mat .count{font:500 .85rem var(--mono)}
+.pages{display:flex;flex-wrap:wrap;gap:18px;justify-content:center}
+.pages{touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.pages.zoomed{justify-content:flex-start;flex-wrap:nowrap;overflow:auto;max-height:78vh;padding:8px;border-radius:10px;touch-action:none;cursor:grab;overscroll-behavior:contain}
+.pages.zoomed.dragging{cursor:grabbing}
+.pages.zoomed canvas{max-width:none;cursor:inherit}
+.pages canvas{cursor:zoom-in;-webkit-user-drag:none}
+.zoom{color:#f4f2ea;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:rgba(0,0,0,.18);border-radius:12px;padding:6px 8px;align-self:flex-start}
+.zoom button{min-width:40px;height:40px;border-radius:9px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.14);color:inherit;font:600 1.25rem var(--body);cursor:pointer;line-height:1}
+.zoom button.zfit{font-size:.9rem;padding:0 12px}
+.zoom button:hover{background:rgba(255,255,255,.24)}
+.zoom button:focus-visible,.zoom input:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.zoom input[type=range]{width:140px;accent-color:#fff}
+.zoom #zLvl{font:500 .9rem var(--mono,monospace);min-width:3.6em;text-align:center}
+.zhint{font-size:.8rem;color:#f4f2ea;opacity:.85;margin:0}
+.pages canvas{background:var(--sheet);box-shadow:0 8px 24px rgba(0,0,0,.35);max-width:100%;height:auto;display:block}
+.pgl{font:500 .75rem var(--mono);color:var(--mat-ink);text-align:center;margin-top:6px}
+.empty{color:var(--mat-ink);text-align:center;padding:40px 10px}
+.save{display:flex;flex-direction:column;gap:8px}
+.hint{font-size:.85rem;color:var(--muted);margin:-4px 0 0}
+.status{font-size:.9rem;min-height:1.4em}
+ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-size:.93rem}
+ol.steps b{font-weight:600}
+[hidden]{display:none!important}
+.tabs{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel);align-self:flex-start}
+.tabs a{font:600 .95rem var(--body);padding:9px 16px;color:var(--ink);text-decoration:none}
+.tabs a[aria-current="page"]{background:var(--ink);color:var(--panel)}
+.seg.wide{display:flex;flex-wrap:wrap}.seg.wide button{flex:1;padding:8px 6px}
+.mana{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px}
+.mrow{display:flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:9px;padding:4px 5px;background:var(--panel);min-width:0}
+.mrow img{width:20px;height:20px;flex:none}
+.mrow .l{flex:1;font-size:.88rem;min-width:0}
+.mrow button{width:26px;height:26px;flex:none;border-radius:7px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:600 1rem var(--body);cursor:pointer;padding:0}
+.mrow button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.mrow b{min-width:1.3em;text-align:center;font-variant-numeric:tabular-nums}
+details summary{cursor:pointer;font-size:.9rem;font-weight:600;margin:4px 0}
+details input{margin-top:6px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-weight:600;font-size:.92rem}
+textarea,input[type=text],input[type=number]{font:500 1rem var(--body);padding:9px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--ink);width:100%;resize:vertical}
+textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.stage{border-radius:10px;padding:24px;display:flex;align-items:center;justify-content:center;min-height:220px;overflow:auto;
+  background-color:#f3eadb;background-image:linear-gradient(45deg,rgba(0,0,0,.06) 25%,transparent 25%,transparent 75%,rgba(0,0,0,.06) 75%),linear-gradient(45deg,rgba(0,0,0,.06) 25%,transparent 25%,transparent 75%,rgba(0,0,0,.06) 75%);background-size:16px 16px;background-position:0 0,8px 8px}
+.stage.dark{background-color:#24201c}
+.stage canvas{max-width:100%;height:auto;display:block}
+.credit{font-size:.8rem;color:var(--mat-ink);margin:0;opacity:.85}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Proxy Print Sheet</h1>
+    <p>Lay out proxy cards at true size for printing, and make names, type lines, P/T, rules text, symbols and flavor text as transparent PNGs.</p>
+    <div class="spec">63 × 88 MM · 300 DPI · 9 CARDS PER SHEET</div>
+  </header>
+  <nav class="tabs" aria-label="Tools"><a href="#sheet" aria-current="page">Print sheet</a><a href="#assets" aria-current="false">Card assets</a></nav>
+
+  <section id="view-sheet">
+  <div class="grid">
+    <div class="panel">
+      <h2>Cards</h2>
+      <div class="drop" id="drop">
+        <strong>Drop images here</strong>
+        <small>PNG, JPG or WebP. You can also paste an image.</small>
+        <label class="btn" for="file">Choose images</label>
+        <input id="file" type="file" accept="image/*" multiple hidden>
+      </div>
+      <div class="items" id="items"></div>
+
+      <h2>Sheet</h2>
+      <div class="settings">
+        <label for="paper">Paper</label>
+        <select id="paper"><option value="letter">Letter, 8.5 × 11 in</option><option value="a4">A4, 210 × 297 mm</option></select>
+        <label for="gap">Space between</label>
+        <select id="gap"><option value="0">None, shared cut lines</option><option value="0.0625">1/16 in</option></select>
+        <label for="bleed">Bleed</label>
+        <select id="bleed"><option value="0" selected>Off</option><option value="0.03125">On, 1/32 in past the cut</option></select>
+        <label for="marks">Cut marks</label>
+        <select id="marks"><option value="on">On</option><option value="off">Off</option></select>
+        <label for="corners">Corner preview</label>
+        <select id="corners"><option value="off">Off</option><option value="on">Show 3 mm corners</option></select>
+      </div>
+      <p class="hint" id="hint"></p>
+
+      <h2>Save</h2>
+      <div class="save">
+        <button class="primary" id="saveBtn">Save PDF</button>
+        <div class="status" id="status" role="status"></div>
+      </div>
+
+      <h2>Printing</h2>
+      <ol class="steps">
+        <li>Print at <b>Actual size / 100%</b>, never "Fit to page."</li>
+        <li>Set paper type to <b>Glossy photo paper</b>.</li>
+        <li>Let it dry 10 to 15 minutes before touching.</li>
+        <li>Cut on the marks, then round corners at <b>3 mm</b>.</li>
+      </ol>
+    </div>
+
+    <div class="mat">
+      <div class="top"><strong>Preview</strong><span class="count" id="count"></span></div>
+      <div class="zoom" role="group" aria-label="Zoom">
+        <button type="button" id="zOut" aria-label="Zoom out">−</button>
+        <input type="range" id="zRange" min="1" max="5" step="0.05" value="1" aria-label="Zoom level">
+        <button type="button" id="zIn" aria-label="Zoom in">+</button>
+        <span id="zLvl" aria-live="polite">100%</span>
+        <button type="button" id="zFit" class="zfit">Fit</button>
+      </div>
+      <p class="zhint">Click a card to zoom in. Drag to move around. Pinch, or hold Ctrl and scroll, to zoom.</p>
+      <div class="pages" id="pages"></div>
+    </div>
+  </div>
+  </section>
+  <section id="view-assets" hidden>
+    <div class="grid">
+      <div class="panel">
+        <h2>Make</h2>
+        <div class="seg wide" role="group" aria-label="Asset type">
+          <button data-mode="name" aria-pressed="true">Name</button>
+          <button data-mode="cost" aria-pressed="false">Mana cost</button>
+          <button data-mode="type" aria-pressed="false">Type line</button>
+          <button data-mode="pt" aria-pressed="false">P/T</button>
+          <button data-mode="rules" aria-pressed="false">Rules text</button>
+          <button data-mode="symbol" aria-pressed="false">Symbol</button>
+          <button data-mode="flavor" aria-pressed="false">Flavor text</button>
+        </div>
+
+        <div class="field" data-for="flavor">
+          <label for="aQuote">Quote</label>
+          <textarea id="aQuote" rows="3">I can't tell a compelling story where nothing bad happens!</textarea>
+          <label for="aAttr">Said by</label>
+          <input id="aAttr" type="text" value="Caine">
+          <label for="aAttrPos">Said-by position</label>
+          <select id="aAttrPos"><option value="same" selected>Right after the quote</option><option value="end">Under the end of the quote</option><option value="right">Right edge, next line</option><option value="left">Left, next line</option><option value="center">Centered, next line</option></select>
+          <label for="aAttrGap">Space above it</label>
+          <select id="aAttrGap"><option value="0.8">Tight</option><option value="1" selected>Normal</option><option value="1.35">Loose</option></select>
+        </div>
+        <div class="field" data-for="cost">
+          <label>Mana cost</label>
+          <div class="mana" id="aMana"></div>
+          <details>
+            <summary>Hybrid or other symbols</summary>
+            <input id="aCost" type="text" value="{4}{W}" aria-label="Mana cost as text">
+            <p class="hint">The buttons fill this in for you. For hybrid, type {W/U}. For Phyrexian, type {B/P}.</p>
+          </details>
+        </div>
+        <div class="field" data-for="name type">
+          <select id="aLine" hidden><option value="name">Card name</option><option value="type">Type line</option></select>
+          <label for="aTitle" id="aTitleL">Card name</label>
+          <input id="aTitle" type="text" value="Kenrith, the Returned King">
+          <label class="btn small" style="align-self:flex-start">Load Beleren Bold file<input id="aBeleren" type="file" accept=".ttf,.otf,.woff,.woff2" hidden></label>
+          <p class="hint" id="aBelHint"></p>
+        </div>
+        <div class="field" data-for="pt">
+          <label for="aPT">Power / toughness</label>
+          <input id="aPT" type="text" value="5/5">
+          <p class="hint">Uses Beleren Bold once it's loaded on the Name tab, and Cinzel until then. Try the pill or rounded box border for a P/T box.</p>
+        </div>
+        <div class="field" data-for="symbol">
+          <label for="aSymStyle">Style</label>
+          <select id="aSymStyle"><option value="stamp">Holo stamp (oval, bottom of the card)</option><option value="set">Set symbol (rarity colors)</option></select>
+          <label class="btn small" style="align-self:flex-start">Choose your image<input id="aSymFile" type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" hidden></label>
+          <p class="hint">A logo or icon works best. Use a PNG with a transparent background or an SVG. On a white background, the dark parts become the shape.</p>
+          <label for="aRarity" id="aRarityL">Rarity color</label>
+          <select id="aRarity"><option value="common">Common, black</option><option value="uncommon">Uncommon, silver</option><option value="rare" selected>Rare, gold</option><option value="mythic">Mythic, orange</option></select>
+          <label for="aTint" id="aTintL">Image inside the stamp</label>
+          <select id="aTint"><option value="tint">Pressed in silver</option><option value="orig">Original colors</option></select>
+        </div>
+        <div class="field" data-for="rules">
+          <label for="aRules">Rules text</label>
+          <textarea id="aRules" rows="6">{R}: All creatures gain trample and haste until end of turn.
+{1}{G}: Put a +1/+1 counter on target creature.
+{2}{W}: Target player gains 5 life.
+{3}{U}: Target player draws a card.
+{4}{B}: Put target creature card from a graveyard onto the battlefield under its owner's control.</textarea>
+          <p class="hint">Symbols in braces become icons: {T} tap, {Q} untap, {W} {U} {B} {R} {G} {C}, numbers, {X}, {E} energy.</p>
+        </div>
+
+        <h2>Style</h2>
+        <div class="settings">
+          <label for="aFont" data-hide="cost name type symbol pt">Font</label>
+          <select id="aFont" data-hide="cost name type symbol pt">
+            <option value="Crimson Pro">Crimson Pro (closest to card text)</option>
+            <option value="EB Garamond">EB Garamond</option>
+            <option value="Cinzel">Cinzel (title style)</option>
+          </select>
+          <label for="aFontFile" data-hide="cost name type symbol pt">Your font</label>
+          <label class="btn small" data-hide="cost name type symbol pt">Upload .ttf / .otf<input id="aFontFile" type="file" accept=".ttf,.otf,.woff,.woff2" hidden></label>
+          <label for="aSize" id="aSizeLabel">Text size</label>
+          <select id="aSize"></select>
+          <label for="aWidth" data-hide="cost name type symbol pt">Width</label>
+          <select id="aWidth" data-hide="cost name type symbol pt">
+            <option value="2.1">2.1 in, card text box</option>
+            <option value="1.8">1.8 in, beside P/T box</option>
+            <option value="2.3">2.3 in, full width</option>
+          </select>
+          <label for="aAlign" data-hide="cost name type symbol pt">Align</label>
+          <select id="aAlign" data-hide="cost name type symbol pt"><option value="left">Left</option><option value="center">Center</option></select>
+          <label for="aColor" data-hide="symbol">Color</label>
+          <select id="aColor" data-hide="symbol"><option value="#111111">Black text</option><option value="#ffffff">White text</option></select>
+          <label for="aBorder">Border</label>
+          <select id="aBorder"><option value="none">None</option><option value="outline">Outline around the shape</option><option value="box">Rounded box</option><option value="pill">Pill, like a name bar</option></select>
+          <label for="aBColor" class="bopt">Border color</label>
+          <select id="aBColor" class="bopt"><option value="#111111">Black</option><option value="#ffffff">White</option><option value="#c9a24a">Gold</option><option value="#a7b0b8">Silver</option></select>
+          <label for="aBThick" class="bopt">Thickness</label>
+          <select id="aBThick" class="bopt"><option value="0.006">Thin</option><option value="0.012" selected>Medium</option><option value="0.02">Thick</option></select>
+          <label for="aBFill" class="bfill">Box fill</label>
+          <select id="aBFill" class="bfill"><option value="none">Clear</option><option value="rgba(15,12,25,0.6)">See-through dark</option><option value="rgba(250,245,235,0.75)">See-through light</option><option value="#111111">Solid black</option><option value="#ffffff">Solid white</option></select>
+          <label for="aSymCol" data-only="cost rules">Symbol colors</label>
+          <select id="aSymCol" data-only="cost rules"><option value="bold">Bold, pops on busy art</option><option value="soft">Soft, like printed cards</option></select>
+          <label for="aShadow" data-only="cost">Shadow</label>
+          <select id="aShadow" data-only="cost"><option value="on">On, like printed costs</option><option value="off">Off</option></select>
+        </div>
+
+        <h2>Save</h2>
+        <div class="save">
+          <div class="settings">
+            <label for="aShape">Canvas</label>
+            <select id="aShape"><option value="3000x4200">Card, 2.5 × 3.5 in (3000 × 4200)</option><option value="745x1040">Scryfall card image (745 × 1040)</option><option value="3300x4500">Card with 1/8 in bleed (3300 × 4500)</option><option value="custom">Custom size</option></select>
+            <label for="aCW" class="cust">Width px</label><input id="aCW" class="cust" type="number" min="50" max="8000" value="3000">
+            <label for="aCH" class="cust">Height px</label><input id="aCH" class="cust" type="number" min="50" max="8000" value="4200">
+            <label>Match a card</label><label class="btn small">Pick a card image<input id="aMatch" type="file" accept="image/*" hidden></label>
+          </div>
+          <p class="hint">Pick one of your Shuffles card images and the canvas copies its exact width and height.</p>
+          <button class="primary" id="aSave">Save PNG</button>
+          <div class="status" id="aStatus" role="status"></div>
+          <p class="hint">Transparent PNG at the canvas size, with the asset big in the middle. Resize it in Shuffles.</p>
+        </div>
+      </div>
+
+      <div class="mat">
+        <div class="top"><strong>Preview</strong><span class="count" id="aInfo"></span></div>
+        <div class="seg" role="group" aria-label="Preview background" style="align-self:flex-start">
+          <button data-bg="light" aria-pressed="true">Light card</button>
+          <button data-bg="dark" aria-pressed="false">Dark card</button>
+        </div>
+        <div class="stage" id="aStage"><canvas id="aCanvas"></canvas></div>
+        <p class="credit">Mana symbols from Scryfall. Real Magic cards use Beleren Bold for names and type lines and MPlantin for text. Neither is free to share, so load your own copies.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const CARD_W = 2.5, CARD_H = 3.5, DPI = 300, MARGIN = 0.15, RADIUS = 3 / 25.4;
+const PAPERS = { letter: [8.5, 11], a4: [8.2677, 11.6929] };
+const SETTINGS = ["paper","gap","bleed","marks","corners"];
+const STORE_KEY = "proxySheetSettings3";
+let items = [], nextId = 1;
+
+try { const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+  SETTINGS.forEach(k => { if (saved[k] != null && [...$(k).options].some(o => o.value === saved[k])) $(k).value = saved[k]; }); } catch {}
+function saveSettings(){ try { const o = {}; SETTINGS.forEach(k => o[k] = $(k).value); localStorage.setItem(STORE_KEY, JSON.stringify(o)); } catch {} }
+
+function sampleCard(label, a, b){
+  const c = document.createElement("canvas"); c.width = 500; c.height = 700;
+  const g = c.getContext("2d");
+  const gr = g.createLinearGradient(0,0,500,700); gr.addColorStop(0,a); gr.addColorStop(1,b);
+  g.fillStyle = gr; g.fillRect(0,0,500,700);
+  g.fillStyle = "rgba(255,255,255,.18)"; for(let i=0;i<9;i++){g.beginPath();g.arc(80+i*45,120+(i%3)*90,30+i*4,0,7);g.fill();}
+  g.fillStyle = "rgba(0,0,0,.45)"; g.fillRect(24,440,452,232);
+  g.fillStyle = "#fff"; g.font = "bold 34px sans-serif"; g.fillText(label,44,500);
+  g.font = "24px sans-serif"; g.fillText("Example card. Replace with",44,550); g.fillText("your own images.",44,584);
+  return c.toDataURL("image/png");
+}
+function addItem(src, name, sample=false){
+  const img = new Image();
+  const it = { id: nextId++, src, name, copies: 1, fit: "fill", sample, img };
+  img.onload = () => { if (Math.abs(img.naturalWidth / img.naturalHeight - 5 / 7) > 0.03) it.fit = "stretch"; render(); renderItems(); };
+  img.src = src; items.push(it);
+}
+addItem(sampleCard("Example A","#6a2c91","#e0a33a"),"Example A",true);
+addItem(sampleCard("Example B","#1b5e7a","#7fd3a8"),"Example B",true);
+
+function readFiles(files){
+  const list = [...files].filter(f => f.type.startsWith("image/"));
+  if (!list.length) return;
+  items = items.filter(i => !i.sample);
+  list.forEach(f => { const r = new FileReader(); r.onload = () => { addItem(r.result, f.name); render(); }; r.readAsDataURL(f); });
+}
+$("file").addEventListener("change", e => { readFiles(e.target.files); e.target.value = ""; });
+const drop = $("drop");
+["dragenter","dragover"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave","drop"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => readFiles(e.dataTransfer.files));
+window.addEventListener("paste", e => { const f = [...(e.clipboardData?.files || [])]; if (f.length) readFiles(f); });
+
+function settings(){
+  const [pw, ph] = PAPERS[$("paper").value];
+  const bleed = parseFloat($("bleed").value);
+  const gap = Math.max(parseFloat($("gap").value), 2 * bleed);
+  const cols = Math.max(1, Math.floor((pw - 2*MARGIN - 2*bleed + gap) / (CARD_W + gap)));
+  const rows = Math.max(1, Math.floor((ph - 2*MARGIN - 2*bleed + gap) / (CARD_H + gap)));
+  const gw = cols * CARD_W + (cols - 1) * gap, gh = rows * CARD_H + (rows - 1) * gap;
+  return { pw, ph, gap, bleed, marks: $("marks").value === "on", corners: $("corners").value === "on",
+    cols, rows, per: cols * rows, x0: (pw - gw) / 2, y0: (ph - gh) / 2, gw, gh };
+}
+function slots(){ const s = []; items.forEach(i => { for (let k = 0; k < i.copies; k++) s.push(i); }); return s; }
+function pos(S, k){ const c = k % S.cols, r = Math.floor(k / S.cols); return [S.x0 + c * (CARD_W + S.gap), S.y0 + r * (CARD_H + S.gap)]; }
+
+function drawFit(ctx, img, x, y, w, h, fit){
+  if (!img.naturalWidth) return;
+  const iw = img.naturalWidth, ih = img.naturalHeight;
+  const sc = fit === "fill" ? Math.max(w / iw, h / ih) : Math.min(w / iw, h / ih);
+  const dw = fit === "stretch" ? w : iw * sc, dh = fit === "stretch" ? h : ih * sc;
+  ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+  ctx.fillStyle = "#fff"; ctx.fillRect(x, y, w, h);
+  ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh); ctx.restore();
+}
+function edges(S){
+  const xs = new Set(), ys = new Set();
+  for (let c = 0; c < S.cols; c++){ const x = S.x0 + c * (CARD_W + S.gap); xs.add(+x.toFixed(4)); xs.add(+(x + CARD_W).toFixed(4)); }
+  for (let r = 0; r < S.rows; r++){ const y = S.y0 + r * (CARD_H + S.gap); ys.add(+y.toFixed(4)); ys.add(+(y + CARD_H).toFixed(4)); }
+  return { xs: [...xs], ys: [...ys] };
+}
+function markLines(S){
+  const E = edges(S), o = 0.06 + S.bleed, L = [];
+  E.xs.forEach(x => { L.push([x, 0, x, S.y0 - o], [x, S.y0 + S.gh + o, x, S.ph]); });
+  E.ys.forEach(y => { L.push([0, y, S.x0 - o, y], [S.x0 + S.gw + o, y, S.pw, y]); });
+  return L;
+}
+
+let Z = 1, zTimer = 0;
+function setZoom(nz, cx, cy){
+  const box = document.getElementById("pages");
+  nz = Math.max(1, Math.min(5, nz)); if (Math.abs(nz - Z) < 0.001) return;
+  const r = box.getBoundingClientRect();
+  if (cx == null){ cx = r.left + box.clientWidth / 2; cy = r.top + box.clientHeight / 2; }
+  // keep the same spot of the same page under the pointer
+  const cvs = [...box.querySelectorAll("canvas")];
+  let tgt = cvs[0], best = Infinity;
+  cvs.forEach(c => { const b = c.getBoundingClientRect(), dx = Math.max(b.left - cx, 0, cx - b.right), dy = Math.max(b.top - cy, 0, cy - b.bottom), d = dx + dy; if (d < best){ best = d; tgt = c; } });
+  let u = 0.5, v = 0.5, sx = cx, sy = cy;
+  if (tgt){ const b = tgt.getBoundingClientRect(); u = Math.min(1, Math.max(0, (cx - b.left) / b.width)); v = Math.min(1, Math.max(0, (cy - b.top) / b.height)); }
+  Z = nz;
+  box.classList.toggle("zoomed", Z > 1.01);
+  cvs.forEach(c => c.style.width = (parseFloat(c.dataset.pw) * 54 * Z) + "px");
+  if (Z > 1.01 && tgt){
+    const r2 = box.getBoundingClientRect();
+    sx = Math.min(Math.max(sx, r2.left), r2.left + box.clientWidth); sy = Math.min(Math.max(sy, r2.top), r2.top + box.clientHeight);
+    const b = tgt.getBoundingClientRect();
+    box.scrollLeft += b.left + u * b.width - sx; box.scrollTop += b.top + v * b.height - sy;
+  }
+  document.getElementById("zLvl").textContent = Math.round(Z * 100) + "%"; document.getElementById("zRange").value = Z;
+  clearTimeout(zTimer); zTimer = setTimeout(render, 220);
+}
+document.getElementById("zIn").addEventListener("click", () => setZoom(Z * 1.4));
+document.getElementById("zOut").addEventListener("click", () => setZoom(Z / 1.4));
+document.getElementById("zFit").addEventListener("click", () => setZoom(1));
+document.getElementById("zRange").addEventListener("input", e => setZoom(parseFloat(e.target.value)));
+(() => {
+  const box = document.getElementById("pages"), pts = new Map();
+  let drag = null, pinch = null;
+  box.addEventListener("wheel", e => {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    e.preventDefault(); setZoom(Z * Math.exp(-e.deltaY * 0.01), e.clientX, e.clientY);
+  }, { passive: false });
+  box.addEventListener("pointerdown", e => {
+    if (e.button !== 0 && e.pointerType === "mouse") return;
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size === 2){
+      const [a, b] = [...pts.values()];
+      pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), z: Z }; drag = null;
+    } else if (pts.size === 1){
+      drag = { x: e.clientX, y: e.clientY, sl: box.scrollLeft, st: box.scrollTop, moved: false, onCard: e.target.tagName === "CANVAS" };
+    }
+    if (Z > 1.01 || pts.size === 2) box.setPointerCapture(e.pointerId);
+  });
+  box.addEventListener("pointermove", e => {
+    if (!pts.has(e.pointerId)) return;
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch && pts.size === 2){
+      const [a, b] = [...pts.values()];
+      setZoom(pinch.z * Math.hypot(a.x - b.x, a.y - b.y) / Math.max(1, pinch.d), (a.x + b.x) / 2, (a.y + b.y) / 2); return;
+    }
+    if (!drag) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (Math.abs(dx) + Math.abs(dy) > 5) drag.moved = true;
+    if (drag.moved && Z > 1.01){ box.classList.add("dragging"); box.scrollLeft = drag.sl - dx; box.scrollTop = drag.st - dy; }
+  });
+  const end = e => {
+    if (!pts.has(e.pointerId)) return;
+    pts.delete(e.pointerId); box.classList.remove("dragging");
+    if (pinch){ if (pts.size < 2) pinch = null; drag = null; return; }
+    if (drag && !drag.moved && drag.onCard && e.type === "pointerup"){
+      if (Z > 1.01) setZoom(1); else setZoom(3, e.clientX, e.clientY);
+    }
+    drag = null;
+  };
+  box.addEventListener("pointerup", end); box.addEventListener("pointercancel", end);
+})();
+function render(){
+  saveSettings();
+  const S = settings(), list = slots();
+  const cardPages = Math.ceil(list.length / S.per), pages = cardPages;
+  $("count").textContent = list.length ? `${list.length} card${list.length>1?"s":""} · ${pages} page${pages>1?"s":""}` : "";
+  $("hint").textContent = S.bleed && parseFloat($("gap").value) < 2*S.bleed ? "Bleed adds a 1/16 in space between cards so the extra art has room." : "";
+  $("saveBtn").disabled = !list.length;
+  const box = $("pages"), keepL = box.scrollLeft, keepT = box.scrollTop; box.innerHTML = "";
+  if (!list.length){ box.innerHTML = '<div class="empty">Add card images to see the sheet.</div>'; renderItems(); return; }
+  const scale = 54 * Z, dpr = Z > 2.5 ? 1 : Math.min(window.devicePixelRatio || 1, 2);
+  box.classList.toggle("zoomed", Z > 1.01); $("zLvl").textContent = Math.round(Z * 100) + "%"; $("zRange").value = Z;
+  const mk = (label) => {
+    const wrap = document.createElement("div"), cv = document.createElement("canvas");
+    cv.width = Math.round(S.pw * scale * dpr); cv.height = Math.round(S.ph * scale * dpr); cv.style.width = (S.pw * scale) + "px";
+    const g = cv.getContext("2d"); g.scale(dpr * scale, dpr * scale); g.fillStyle = "#fff"; g.fillRect(0, 0, S.pw, S.ph);
+    const l = document.createElement("div"); l.className = "pgl"; l.textContent = label;
+    cv.dataset.pw = S.pw;
+    wrap.append(cv, l); box.appendChild(wrap); return g;
+  };
+  let n = 1;
+  for (let p = 0; p < cardPages; p++){
+    const g = mk(`Page ${n++} of ${pages}`);
+    list.slice(p * S.per, (p + 1) * S.per).forEach((it, k) => {
+      const [x, y] = pos(S, k);
+      const ov = S.gap === 0 ? 0.6 / (scale * dpr) : 0;
+      drawFit(g, it.img, x - S.bleed - ov, y - S.bleed - ov, CARD_W + 2*S.bleed + 2*ov, CARD_H + 2*S.bleed + 2*ov, it.fit);
+      if (S.corners){
+        g.save(); g.beginPath(); g.rect(x, y, CARD_W, CARD_H); g.roundRect(x, y, CARD_W, CARD_H, RADIUS);
+        g.fillStyle = "rgba(217,40,40,.75)"; g.fill("evenodd");
+        g.strokeStyle = "rgba(217,40,40,.9)"; g.lineWidth = 0.01; g.beginPath(); g.roundRect(x, y, CARD_W, CARD_H, RADIUS); g.stroke(); g.restore();
+      }
+    });
+    if (S.marks){ g.strokeStyle = "#111"; g.lineWidth = 0.012; g.beginPath(); markLines(S).forEach(([a,b,c,d]) => { g.moveTo(a,b); g.lineTo(c,d); }); g.stroke(); }
+  }
+  box.scrollLeft = keepL; box.scrollTop = keepT;
+  renderItems();
+}
+
+function renderItems(){
+  const box = $("items"); box.innerHTML = "";
+  const per = settings().per;
+  items.forEach(it => {
+    const d = document.createElement("div"); d.className = "item";
+    d.innerHTML = `<img alt=""><div class="meta"><div class="name"></div>${it.sample ? '<div class="tag">Example</div>' : ""}
+      <div class="row"><span class="stepper"><button aria-label="Fewer copies">−</button><output></output><button aria-label="More copies">+</button></span>
+      <span class="seg" role="group" aria-label="Image fit"><button data-f="stretch">Squash</button><button data-f="fill">Fill</button><button data-f="fit">Fit</button></span></div>
+      <div class="row"><button class="small fill">Fill the sheet</button><button class="small x">Remove</button></div></div>`;
+    d.querySelector("img").src = it.src;
+    d.querySelector(".name").textContent = it.name;
+    d.querySelector("output").textContent = it.copies;
+    const [minus, plus] = d.querySelectorAll(".stepper button");
+    minus.onclick = () => { it.copies = Math.max(1, it.copies - 1); render(); };
+    plus.onclick = () => { it.copies = Math.min(99, it.copies + 1); render(); };
+    d.querySelectorAll(".seg button").forEach(b => { b.setAttribute("aria-pressed", b.dataset.f === it.fit); b.onclick = () => { it.fit = b.dataset.f; render(); }; });
+    d.querySelector(".fill").onclick = () => {
+      const others = items.reduce((s, i) => s + (i === it ? 0 : i.copies), 0);
+      const rem = (per - (others % per)) % per;
+      it.copies = rem === 0 ? (others === 0 ? per : it.copies) : rem; render();
+    };
+    d.querySelector(".x").onclick = () => { items = items.filter(i => i !== it); render(); };
+    box.appendChild(d);
+  });
+}
+SETTINGS.forEach(id => $(id).addEventListener("change", render));
+
+function buildPdf(){
+  const S = settings(), list = slots();
+  const doc = new window.jspdf.jsPDF({ unit: "in", format: [S.pw, S.ph], orientation: "portrait" });
+  let first = true;
+  const newPage = () => { if (!first) doc.addPage([S.pw, S.ph], "portrait"); first = false; };
+  const cw = CARD_W + 2*S.bleed, ch = CARD_H + 2*S.bleed;
+  const cv = document.createElement("canvas"); cv.width = Math.round(S.pw * DPI); cv.height = Math.round(S.ph * DPI);
+  const g = cv.getContext("2d");
+  const pages = Math.ceil(list.length / S.per);
+  for (let p = 0; p < pages; p++){
+    newPage();
+    g.fillStyle = "#fff"; g.fillRect(0, 0, cv.width, cv.height);
+    list.slice(p * S.per, (p + 1) * S.per).forEach((it, k) => {
+      const [x, y] = pos(S, k);
+      const x0 = Math.round((x - S.bleed) * DPI), y0 = Math.round((y - S.bleed) * DPI);
+      const x1 = Math.round((x - S.bleed + cw) * DPI), y1 = Math.round((y - S.bleed + ch) * DPI);
+      drawFit(g, it.img, x0, y0, x1 - x0, y1 - y0, it.fit);
+    });
+    doc.addImage(cv.toDataURL("image/jpeg", 0.93), "JPEG", 0, 0, S.pw, S.ph, undefined, "FAST");
+    if (S.marks){ doc.setDrawColor(0); doc.setLineWidth(0.008); markLines(S).forEach(([a,b,c,d]) => doc.line(a,b,c,d)); }
+  }
+  return doc.output("blob");
+}
+
+let downloads = null;
+window.saveFile = async (name, blob) => {
+  let dl = null;
+  if (window.claude && window.claude.use){ try { dl = await window.claude.use("downloads"); } catch { dl = null; } }
+  if (dl){ await dl.save({ filename: name, data: blob }); return; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+};
+$("saveBtn").addEventListener("click", async () => {
+  const st = $("status");
+  if (!window.jspdf){ st.textContent = "The PDF tool didn't load. Reload the page and try again."; return; }
+  st.textContent = "Building PDF…";
+  try {
+    const blob = buildPdf();
+    await window.saveFile("proxy-sheet.pdf", blob);
+    st.textContent = "Saved proxy-sheet.pdf. Print it at Actual size.";
+  } catch (e) {
+    const code = e && e.code;
+    st.textContent = code === "declined" ? "Save canceled." : code === "rate_limited" ? "A save prompt is already open. Finish that one first." : "Couldn't save the PDF here. " + (e && e.message ? e.message : "");
+  }
+});
+
+render();
+(async () => { try { downloads = await window.claude?.use?.("downloads"); } catch { downloads = null; } })();
+</script>
+<script>
+window.__symReady.then(() => {
+const SYM = window.__SYM;
+const $ = id => document.getElementById(id);
+let ADPI = 1200;
+const symImgs = {};
+const BOLD = { "#F8F6D8": "#FFEB8A", "#C1D7E9": "#3D9BE9", "#BAB1AB": "#8E817A", "#E49977": "#F2552C", "#A3C095": "#2FA84F", "#CAC5C0": "#BDB5AE", "#C9C4BE": "#BDB5AE" };
+function manaSrc(k, bold){ let s = SYM[k]; if (bold) for (const c in BOLD) s = s.split(c).join(BOLD[c]); return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(s); }
+for (const k in SYM){ const im = new Image(); im.src = manaSrc(k, true); symImgs[k] = im; }
+let ready = Promise.all(Object.values(symImgs).map(im => im.decode().catch(() => {})));
+function setSymColors(bold){ for (const k in SYM) symImgs[k].src = manaSrc(k, bold); ready = Promise.all(Object.values(symImgs).map(im => im.decode().catch(() => {}))); }
+
+// ---- view switching ----
+function route(){
+  const assets = location.hash === "#assets";
+  $("view-sheet").hidden = assets; $("view-assets").hidden = !assets;
+  document.querySelectorAll(".tabs a").forEach(a => a.setAttribute("aria-current", (a.getAttribute("href") === "#assets") === assets ? "page" : "false"));
+  if (assets) draw();
+}
+window.addEventListener("hashchange", route);
+
+// ---- state ----
+let mode = "name", bg = "light";
+const SIZES = { flavor: [7, 8, 9, 10, 11], rules: [7, 8, 9, 10, 11], cost: [0.10, 0.13, 0.16, 0.2, 0.3], title: [7, 8, 8.5, 9, 10, 11, 12, 14], symbol: [0.12, 0.16, 0.2, 0.25, 0.3, 0.4], pt: [8, 9, 10, 11, 12, 14] };
+SIZES.name = SIZES.type = SIZES.title;
+const titleVals = { name: "Kenrith, the Returned King", type: "Legendary Creature — Human Noble", pt: "5/5" };
+const TSIZE = { name: 10, type: 8.5, pt: 10 };
+let belReady = false;
+function belHint(){ $("aBelHint").textContent = belReady ? "Beleren Bold is loaded and saved in this browser." : "Beleren Bold isn't loaded yet. Load your font file once and this browser keeps it. Until then the preview uses Cinzel."; }
+async function loadBel(src){ const ff = new FontFace("Beleren Bold", src, { weight: "700" }); await ff.load(); document.fonts.add(ff); belReady = true; belHint(); draw(); }
+function toB64(buf){ const u = new Uint8Array(buf); let s = ""; for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return btoa(s); }
+(async () => {
+  let saved = null; try { saved = localStorage.getItem("proxyBeleren"); } catch {}
+  try {
+    if (saved) await loadBel(Uint8Array.from(atob(saved), c => c.charCodeAt(0)).buffer);
+    else await loadBel("local('Beleren Bold'), local('Beleren-Bold'), local('Beleren2016-Bold'), local('Beleren2016 Bold')");
+  } catch { belHint(); }
+})();
+$("aBeleren").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return; e.target.value = "";
+  const buf = await f.arrayBuffer();
+  try { await loadBel(buf.slice(0)); try { localStorage.setItem("proxyBeleren", toB64(buf)); } catch {} }
+  catch { $("aStatus").textContent = "That font file couldn't be read. Try a .ttf or .otf file."; }
+});
+$("aLine").addEventListener("change", () => { const l = $("aLine").value; $("aTitle").value = titleVals[l]; $("aSize").value = String(TSIZE[l]); draw(); });
+$("aTitle").addEventListener("input", () => { titleVals[$("aLine").value] = $("aTitle").value; draw(); });
+function fillSizes(){
+  const s = $("aSize"), prev = s.value; s.innerHTML = "";
+  SIZES[mode].forEach(v => { const o = document.createElement("option"); o.value = v;
+    o.textContent = mode === "symbol" ? `${v} in tall` : mode === "cost" ? `${v} in symbols${v === 0.13 ? ", card cost size" : ""}` : `${v} pt${v === 9 && !["name","type","pt"].includes(mode) ? ", card size" : ""}`; s.appendChild(o); });
+  s.value = mode === "pt" ? (SIZES.pt.map(String).includes(prev) ? prev : "10") : mode === "symbol" ? (SIZES.symbol.map(String).includes(prev) ? prev : "0.2") : (mode === "name" || mode === "type") ? String(TSIZE[mode]) : SIZES[mode].map(String).includes(prev) ? prev : (mode === "cost" ? "0.13" : "9");
+  $("aSizeLabel").textContent = mode === "cost" || mode === "symbol" ? "Symbol size" : "Text size"; symOpts();
+}
+function showMode(){
+  document.querySelectorAll("[data-mode]").forEach(b => b.setAttribute("aria-pressed", b.dataset.mode === mode));
+  if (mode === "name" || mode === "type"){ $("aLine").value = mode; $("aTitle").value = titleVals[mode]; $("aTitleL").textContent = mode === "name" ? "Card name" : "Type line"; }
+  document.querySelectorAll(".field[data-for]").forEach(f => f.hidden = !f.dataset.for.split(" ").includes(mode));
+  document.querySelectorAll("[data-hide]").forEach(e => e.hidden = e.dataset.hide.split(" ").includes(mode));
+  document.querySelectorAll("[data-only]").forEach(e => e.hidden = !e.dataset.only.split(" ").includes(mode));
+  fillSizes(); draw();
+}
+document.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => { mode = b.dataset.mode; showMode(); });
+document.querySelectorAll("[data-bg]").forEach(b => b.onclick = () => { bg = b.dataset.bg;
+  document.querySelectorAll("[data-bg]").forEach(x => x.setAttribute("aria-pressed", x === b)); $("aStage").classList.toggle("dark", bg === "dark"); });
+["aQuote","aAttr","aCost","aRules","aPT"].forEach(id => $(id).addEventListener("input", draw));
+["aFont","aSize","aWidth","aAlign","aColor","aShadow","aAttrPos","aAttrGap"].forEach(id => $(id).addEventListener("change", draw));
+
+$("aFontFile").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  const name = "Custom " + f.name.replace(/\.[^.]+$/, "");
+  try { const ff = new FontFace(name, await f.arrayBuffer()); await ff.load(); document.fonts.add(ff);
+    const o = document.createElement("option"); o.value = name; o.textContent = name + " (uploaded)"; $("aFont").appendChild(o); $("aFont").value = name; draw();
+  } catch { $("aStatus").textContent = "That font file couldn't be read. Try a .ttf or .otf file."; }
+  e.target.value = "";
+});
+
+// ---- parsing ----
+function parseCost(s){
+  s = s.trim(); const out = [];
+  if (s.includes("{")){ (s.match(/\{[^}]+\}/g) || []).forEach(t => out.push(t.toUpperCase())); return out; }
+  const m = s.toUpperCase().match(/\d+|[WUBRGCXSTQE]/g) || [];
+  m.forEach(t => out.push("{" + t + "}")); return out;
+}
+function tokens(text){
+  // words, spaces and {symbols}; newlines become paragraph breaks
+  return text.split("\n").map(line => line.split(/(\{[^}]+\})|(\s+)/).filter(Boolean).map(t => /^\{[^}]+\}$/.test(t) && SYM[t.toUpperCase()] ? { sym: t.toUpperCase() } : { text: t }));
+}
+
+// ---- rendering ----
+function layout(ctx, paras, maxW, symSize){
+  const lines = [];
+  paras.forEach(toks => {
+    let line = [], w = 0;
+    const push = () => { while (line.length && line[line.length-1].text && !line[line.length-1].text.trim()) { w -= line.pop().w; } lines.push({ items: line, w }); line = []; w = 0; };
+    toks.forEach(t => {
+      const tw = t.sym ? symSize * 1.08 : ctx.measureText(t.text).width;
+      if (t.text && !t.text.trim() && !line.length) return;
+      if (w + tw > maxW && line.length && !(t.text && !t.text.trim())) push();
+      if (t.text && !t.text.trim() && !line.length) return;
+      line.push({ ...t, w: tw }); w += tw;
+    });
+    push();
+  });
+  return lines;
+}
+function drawText(cv, text, opts){
+  const { font, italic, pt, widthIn, align, color, attr } = opts;
+  const px = pt / 72 * ADPI, maxW = widthIn * ADPI, lh = px * 1.18, sym = px * 0.82, pad = Math.round(px * 0.3);
+  const fontStr = `${italic ? "italic " : ""}400 ${px}px "${font}", Georgia, serif`;
+  const ctx = cv.getContext("2d"); ctx.font = fontStr;
+  const lines = layout(ctx, tokens(text), maxW, sym);
+  let attrLine = attr ? "— " + attr : null, ax = 0, ay = 0, extra = 0;
+  if (attrLine){
+    const aw = ctx.measureText(attrLine).width, last = lines[lines.length - 1] || { w: 0 };
+    const lastEnd = (align === "center" ? (maxW - last.w) / 2 : 0) + last.w;
+    let pos = opts.attrPos || "right";
+    if (pos === "same" && lines.length && lastEnd + px * 0.35 + aw <= maxW){ ax = lastEnd + px * 0.35; ay = (lines.length - 1) * lh; }
+    else {
+      if (pos === "same") pos = "end";
+      extra = lh * (opts.attrGap || 1); ay = Math.max(0, (lines.length - 1) * lh + extra);
+      ax = pos === "end" ? Math.max(0, lastEnd - aw) : pos === "left" ? 0 : pos === "center" ? (maxW - aw) / 2 : maxW - aw;
+    }
+  }
+  const h = Math.ceil(Math.max(lines.length * lh + extra, ay + lh) + pad * 2);
+  cv.width = Math.ceil(maxW + pad * 2); cv.height = h;
+  const c = cv.getContext("2d"); c.font = fontStr; c.fillStyle = color; c.textBaseline = "alphabetic";
+  lines.forEach((ln, i) => {
+    let x = pad + (align === "center" ? (maxW - ln.w) / 2 : 0); const y = pad + i * lh + px * 0.95;
+    ln.items.forEach(it => {
+      if (it.sym){ const im = symImgs[it.sym]; if (im) c.drawImage(im, x + sym * 0.04, y - sym * 0.86, sym, sym); }
+      else c.fillText(it.text, x, y);
+      x += it.w;
+    });
+  });
+  if (attrLine) c.fillText(attrLine, pad + ax, pad + ay + px * 0.95);
+  return { wIn: cv.width / ADPI, hIn: cv.height / ADPI };
+}
+function drawTitle(cv, text, pt, color, font){
+  const px = pt / 72 * ADPI, pad = Math.round(px * 0.3), f = `700 ${px}px "${font}", Georgia, serif`;
+  const c0 = cv.getContext("2d"); c0.font = f; const w = c0.measureText(text).width;
+  cv.width = Math.max(1, Math.ceil(w + pad * 2)); cv.height = Math.ceil(px * 1.25 + pad * 2);
+  const c = cv.getContext("2d"); c.font = f; c.fillStyle = color; c.textBaseline = "alphabetic"; c.fillText(text, pad, pad + px * 0.98);
+  return { wIn: cv.width / ADPI, hIn: cv.height / ADPI };
+}
+// ---- your own symbol ----
+let symSrc = null;
+function prepImage(img){
+  let iw = img.naturalWidth || 512, ih = img.naturalHeight || 512; const k = Math.min(1, 1024 / Math.max(iw, ih), 4);
+  const c = document.createElement("canvas"); c.width = Math.max(1, Math.round(iw * k)); c.height = Math.max(1, Math.round(ih * k));
+  const g = c.getContext("2d"); g.drawImage(img, 0, 0, c.width, c.height);
+  const orig = document.createElement("canvas"); orig.width = c.width; orig.height = c.height; orig.getContext("2d").drawImage(c, 0, 0);
+  const d = g.getImageData(0, 0, c.width, c.height), p = d.data; let transp = false;
+  for (let i = 3; i < p.length; i += 4) if (p[i] < 250) { transp = true; break; }
+  if (!transp){ for (let i = 0; i < p.length; i += 4){ const l = 0.299*p[i] + 0.587*p[i+1] + 0.114*p[i+2]; p[i+3] = l > 235 ? 0 : 255 - l; } g.putImageData(d, 0, 0);
+    const od = orig.getContext("2d"); od.globalCompositeOperation = "destination-in"; od.drawImage(c, 0, 0); }
+  let x0 = c.width, y0 = c.height, x1 = -1, y1 = -1; const q = g.getImageData(0, 0, c.width, c.height).data;
+  for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) if (q[(y*c.width + x)*4 + 3] > 20){ if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  if (x1 < 0) return null;
+  const crop = src => { const o = document.createElement("canvas"); o.width = x1 - x0 + 1; o.height = y1 - y0 + 1; o.getContext("2d").drawImage(src, -x0, -y0); return o; };
+  return { mask: crop(c), orig: crop(orig) };
+}
+(function defaultSym(){
+  const c = document.createElement("canvas"); c.width = c.height = 512; const g = c.getContext("2d"); g.beginPath();
+  for (let i = 0; i < 10; i++){ const r = i % 2 ? 105 : 250, t = -Math.PI/2 + i * Math.PI/5; g.lineTo(256 + r*Math.cos(t), 262 + r*Math.sin(t)); }
+  g.closePath(); g.fillStyle = "#111"; g.fill(); symSrc = prepImage(c);
+})();
+function symOpts(){ const set = $("aSymStyle").value === "set";
+  $("aRarity").hidden = $("aRarityL").hidden = !set; $("aTint").hidden = $("aTintL").hidden = set; }
+$("aSymStyle").addEventListener("change", () => { symOpts(); draw(); });
+["aRarity","aTint"].forEach(id => $(id).addEventListener("change", draw));
+$("aSymFile").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return; e.target.value = "";
+  const url = URL.createObjectURL(f), img = new Image();
+  try { img.src = url; await img.decode(); const r = prepImage(img);
+    if (!r) { $("aStatus").textContent = "That image looks empty. Try one with a clear shape."; return; }
+    symSrc = r; $("aStatus").textContent = ""; draw();
+  } catch { $("aStatus").textContent = "That image couldn't be opened. Try a PNG or SVG."; }
+  finally { URL.revokeObjectURL(url); }
+});
+const RARITY = { common: ["#3a3a3a", "#050505", "#e9e9e9"], uncommon: ["#eef4f7", "#718893", "#000"], rare: ["#f6e2a0", "#9c7526", "#000"], mythic: ["#fbbc55", "#c2331a", "#000"] };
+function layer(w, h){ const c = document.createElement("canvas"); c.width = w; c.height = h; return c; }
+function drawSymbol(cv, sizeIn, style){
+  const S = symSrc, s = sizeIn * ADPI, ar = S.mask.width / S.mask.height;
+  if (style === "set"){
+    let h = s, w = s * ar; if (w > s * 1.6){ w = s * 1.6; h = w / ar; }
+    const o = Math.max(2, s * 0.05), pad = Math.ceil(o + 4), [top, bot, line] = RARITY[$("aRarity").value];
+    cv.width = Math.ceil(w + pad*2); cv.height = Math.ceil(h + pad*2);
+    const ol = layer(cv.width, cv.height), og = ol.getContext("2d");
+    for (let a = 0; a < 24; a++){ const t = a / 24 * Math.PI * 2; og.drawImage(S.mask, pad + Math.cos(t)*o, pad + Math.sin(t)*o, w, h); }
+    og.globalCompositeOperation = "source-in"; og.fillStyle = line; og.fillRect(0, 0, ol.width, ol.height);
+    const fl = layer(cv.width, cv.height), fg = fl.getContext("2d"); fg.drawImage(S.mask, pad, pad, w, h);
+    fg.globalCompositeOperation = "source-in"; const gr = fg.createLinearGradient(0, pad, 0, pad + h); gr.addColorStop(0, top); gr.addColorStop(1, bot); fg.fillStyle = gr; fg.fillRect(0, 0, fl.width, fl.height);
+    const c = cv.getContext("2d"); c.drawImage(ol, 0, 0); c.drawImage(fl, 0, 0);
+  } else {
+    const h = s, w = s * 1.45, lw = Math.max(2, s * 0.04), pad = Math.ceil(lw) + 2;
+    cv.width = Math.ceil(w + pad*2); cv.height = Math.ceil(h + pad*2);
+    const c = cv.getContext("2d"), cx = pad + w/2, cy = pad + h/2;
+    c.save(); c.beginPath(); c.ellipse(cx, cy, w/2, h/2, 0, 0, Math.PI*2);
+    const gr = c.createRadialGradient(cx - w*0.15, cy - h*0.2, 0, cx, cy, w/2); gr.addColorStop(0, "#fbfcfd"); gr.addColorStop(0.6, "#c9d0d6"); gr.addColorStop(1, "#8d969e");
+    c.fillStyle = gr; c.fill(); c.lineWidth = lw; c.strokeStyle = "#6b737a"; c.stroke(); c.clip();
+    let iw = w * 0.62, ih = iw / ar; if (ih > h * 0.62){ ih = h * 0.62; iw = ih * ar; }
+    let src = S.orig;
+    if ($("aTint").value === "tint"){ src = layer(S.mask.width, S.mask.height); const tg = src.getContext("2d"); tg.drawImage(S.mask, 0, 0); tg.globalCompositeOperation = "source-in"; tg.fillStyle = "#4a5258"; tg.fillRect(0, 0, src.width, src.height); }
+    c.drawImage(src, cx - iw/2, cy - ih/2, iw, ih); c.restore();
+  }
+  return { wIn: cv.width / ADPI, hIn: cv.height / ADPI };
+}
+function bOpts(){ const k = $("aBorder").value;
+  document.querySelectorAll(".bopt").forEach(e => e.style.display = k === "none" ? "none" : "");
+  document.querySelectorAll(".bfill").forEach(e => e.style.display = k === "box" || k === "pill" ? "" : "none"); }
+["aBorder","aBColor","aBThick","aBFill"].forEach(id => $(id).addEventListener("change", () => { bOpts(); draw(); }));
+function applyBorder(cv){
+  const kind = $("aBorder").value; if (kind === "none") return;
+  const tmp = layer(cv.width, cv.height); tmp.getContext("2d").drawImage(cv, 0, 0);
+  const t = Math.max(2, parseFloat($("aBThick").value) * ADPI), col = $("aBColor").value;
+  if (kind === "outline"){
+    const pad = Math.ceil(t) + 2; cv.width = tmp.width + pad*2; cv.height = tmp.height + pad*2;
+    const ol = layer(cv.width, cv.height), og = ol.getContext("2d");
+    for (const rr of [t/3, t*2/3, t]) for (let a = 0; a < 32; a++){ const q = a / 32 * Math.PI * 2; og.drawImage(tmp, pad + Math.cos(q)*rr, pad + Math.sin(q)*rr); }
+    og.globalCompositeOperation = "source-in"; og.fillStyle = col; og.fillRect(0, 0, ol.width, ol.height);
+    const c = cv.getContext("2d"); c.drawImage(ol, 0, 0); c.drawImage(tmp, pad, pad);
+  } else {
+    const p = 0.04 * ADPI, h = tmp.height + p*2, w = tmp.width + p*2 + (kind === "pill" ? h * 0.3 : 0), o = t/2 + 2;
+    cv.width = Math.ceil(w + o*2); cv.height = Math.ceil(h + o*2);
+    const c = cv.getContext("2d"); c.beginPath(); c.roundRect(o, o, w, h, kind === "pill" ? h/2 : Math.min(h/2, 0.05 * ADPI));
+    const fill = $("aBFill").value; if (fill !== "none"){ c.fillStyle = fill; c.fill(); }
+    c.lineWidth = t; c.strokeStyle = col; c.stroke();
+    c.drawImage(tmp, o + (w - tmp.width)/2, o + (h - tmp.height)/2);
+  }
+}
+// ---- mana pickers ----
+const MANA = [["W","White",9],["U","Blue",9],["B","Black",9],["R","Red",9],["G","Green",9],["N","Generic",20],["C","Colorless",9],["X","X",3]];
+const cnt = { X: 0, N: 4, W: 1, U: 0, B: 0, R: 0, G: 0, C: 0 };
+function costStr(){ let s = "{X}".repeat(cnt.X); if (cnt.N) s += `{${cnt.N}}`; for (const k of "WUBRGC") s += `{${k}}`.repeat(cnt[k]); return s; }
+function showCounts(){ MANA.forEach(([k]) => { const e = document.getElementById("mc" + k); if (e) e.textContent = cnt[k]; }); }
+MANA.forEach(([k, label, max]) => {
+  const row = document.createElement("div"); row.className = "mrow";
+  const im = document.createElement("img"); im.alt = ""; im.src = symImgs[k === "N" ? "{1}" : `{${k}}`].src;
+  const l = document.createElement("span"); l.className = "l"; l.textContent = label;
+  const mk = (txt, d, aria) => { const b = document.createElement("button"); b.type = "button"; b.textContent = txt; b.setAttribute("aria-label", aria);
+    b.onclick = () => { cnt[k] = Math.max(0, Math.min(max, cnt[k] + d)); $("aCost").value = costStr(); showCounts(); draw(); }; return b; };
+  const n = document.createElement("b"); n.id = "mc" + k; n.textContent = cnt[k];
+  row.append(im, l, mk("−", -1, "Less " + label), n, mk("+", 1, "More " + label)); $("aMana").appendChild(row);
+});
+$("aCost").addEventListener("input", () => {
+  for (const k in cnt) cnt[k] = 0;
+  parseCost($("aCost").value).forEach(t => { const d = t.match(/^\{(\d+)\}$/), c = t.match(/^\{([XWUBRGC])\}$/); if (d) cnt.N += +d[1]; else if (c) cnt[c[1]]++; });
+  showCounts();
+});
+// ---- full-card placement ----
+const nudge = {};
+function anchor(){
+  if (mode === "name") return [0.2, 0.27, 0, 0.5];
+  if (mode === "cost") return [2.3, 0.27, 1, 0.5];
+  if (mode === "type") return [0.2, 2.08, 0, 0.5];
+  if (mode === "rules") return [0.2, 2.24, 0, 0];
+  if (mode === "flavor") return [0.2, 3.12, 0, 1];
+  if (mode === "pt") return [2.3, 3.2, 1, 0.5];
+  return $("aSymStyle").value === "set" ? [2.3, 2.08, 1, 0.5] : [1.25, 3.3, 0.5, 0.5];
+}
+function onCardOpts_unused(){ return; const on = false;
+  document.querySelectorAll(".oncard").forEach(e => e.style.display = on ? "" : "none");
+  const n = nudge[mode] || [0, 0]; $("aNx").value = n[0]; $("aNy").value = n[1]; }
+function placeOnCard(cv){
+  const tmp = layer(cv.width, cv.height); tmp.getContext("2d").drawImage(cv, 0, 0);
+  const [x, y, ax, ay] = anchor(), n = nudge[mode] || [0, 0];
+  cv.width = Math.round(2.5 * ADPI); cv.height = Math.round(3.5 * ADPI);
+  cv.getContext("2d").drawImage(tmp, Math.round((x + n[0]) * ADPI - ax * tmp.width), Math.round((y + n[1]) * ADPI - ay * tmp.height));
+}
+function drawCost(cv, list, sizeIn, shadow){
+  const s = sizeIn * ADPI, gap = s * 0.08, off = s * 0.07, pad = Math.ceil(off + 2);
+  cv.width = Math.max(1, Math.ceil(list.length * s + Math.max(0, list.length - 1) * gap + pad * 2)); cv.height = Math.ceil(s + pad * 2);
+  const c = cv.getContext("2d");
+  list.forEach((t, i) => {
+    const im = symImgs[t], x = pad + i * (s + gap), y = pad;
+    if (!im) return;
+    if (shadow){ c.save(); c.beginPath(); c.arc(x + s/2 - off, y + s/2 + off, s/2, 0, Math.PI*2); c.fillStyle = "#000"; c.fill(); c.restore(); }
+    c.drawImage(im, x, y, s, s);
+  });
+  return { wIn: cv.width / ADPI, hIn: cv.height / ADPI };
+}
+let lastName = "flavor-text.png";
+async function draw(){
+  if ($("view-assets").hidden) return;
+  await ready;
+  const font = $("aFont").value;
+  try { await document.fonts.load(`italic 40px "${font}"`); await document.fonts.load(`40px "${font}"`); } catch {}
+  const cv = $("aCanvas"), color = $("aColor").value;
+  ADPI = 1200;
+  let bad = await render(cv, color, font);
+  const sh = Math.min(cv.width, cv.height), lg = Math.max(cv.width, cv.height);
+  if (sh < 1200){ ADPI = Math.min(ADPI * 1200 / sh, ADPI * 7000 / lg); bad = await render(cv, color, font); }
+  { const tmp = layer(cv.width, cv.height); tmp.getContext("2d").drawImage(cv, 0, 0);
+    const [CW, CH] = canvasSize(); cv.width = CW; cv.height = CH; const g = cv.getContext("2d");
+    const k = Math.min(CW * 0.92 / tmp.width, CH * 0.943 / tmp.height), w = tmp.width * k, h = tmp.height * k;
+    g.imageSmoothingQuality = "high"; g.drawImage(tmp, (CW - w) / 2, (CH - h) / 2, w, h); }
+  cv.style.width = Math.round(Math.min(300, 420 * cv.width / cv.height)) + "px"; cv.style.outline = "1px dashed rgba(0,0,0,.45)"; cv.style.borderRadius = "12px";
+  $("aInfo").textContent = `${cv.width} × ${cv.height} px`;
+  if (bad.length) $("aStatus").textContent = `Not a known symbol: ${bad.join(" ")}`;
+}
+$("aSymCol").addEventListener("change", () => { setSymColors($("aSymCol").value === "bold"); document.querySelectorAll(".mrow img").forEach((im, i) => { const k = MANA[i][0]; im.src = symImgs[k === "N" ? "{1}" : `{${k}}`].src; }); draw(); });
+function canvasSize(){
+  const v = $("aShape").value; if (v !== "custom") return v.split("x").map(Number);
+  const c = n => Math.max(50, Math.min(8000, Math.round(parseFloat(n) || 0)));
+  return [c($("aCW").value), c($("aCH").value)];
+}
+function shapeOpts(){ document.querySelectorAll(".cust").forEach(e => e.style.display = $("aShape").value === "custom" ? "" : "none"); }
+$("aShape").addEventListener("change", () => { shapeOpts(); draw(); });
+["aCW","aCH"].forEach(id => $(id).addEventListener("input", draw));
+$("aMatch").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return; e.target.value = "";
+  const url = URL.createObjectURL(f), img = new Image();
+  try { img.src = url; await img.decode(); $("aCW").value = img.naturalWidth; $("aCH").value = img.naturalHeight; $("aShape").value = "custom"; shapeOpts(); draw();
+    $("aStatus").textContent = `Canvas now matches your card: ${img.naturalWidth} × ${img.naturalHeight} px.`; }
+  catch { $("aStatus").textContent = "That image couldn't be opened."; }
+  finally { URL.revokeObjectURL(url); }
+});
+shapeOpts();
+async function render(cv, color, font){
+  let r, bad = [];
+  if (mode === "cost"){
+    const list = parseCost($("aCost").value); bad = list.filter(t => !symImgs[t]);
+    r = drawCost(cv, list.filter(t => symImgs[t]), parseFloat($("aSize").value), $("aShadow").value === "on"); lastName = "mana-cost.png";
+  } else if (mode === "symbol"){
+    const st = $("aSymStyle").value; r = drawSymbol(cv, parseFloat($("aSize").value), st); lastName = st === "set" ? "set-symbol.png" : "holo-stamp.png";
+  } else if (mode === "pt"){
+    const tf = belReady ? "Beleren Bold" : "Cinzel";
+    try { await document.fonts.load(`700 40px "${tf}"`); } catch {}
+    r = drawTitle(cv, $("aPT").value, parseFloat($("aSize").value), color, tf); lastName = "power-toughness.png";
+  } else if (mode === "name" || mode === "type"){
+    const line = $("aLine").value, tf = belReady ? "Beleren Bold" : "Cinzel";
+    try { await document.fonts.load(`700 40px "${tf}"`); } catch {}
+    r = drawTitle(cv, $("aTitle").value, parseFloat($("aSize").value), color, tf);
+    lastName = { name: "card-name.png", type: "type-line.png", pt: "power-toughness.png" }[line];
+  } else if (mode === "flavor"){
+    r = drawText(cv, $("aQuote").value.trim() ? `“${$("aQuote").value.trim()}”` : "", { font, italic: true, pt: parseFloat($("aSize").value), widthIn: parseFloat($("aWidth").value), align: $("aAlign").value, color, attr: $("aAttr").value.trim(), attrPos: $("aAttrPos").value, attrGap: parseFloat($("aAttrGap").value) }); lastName = "flavor-text.png";
+  } else {
+    r = drawText(cv, $("aRules").value, { font, italic: false, pt: parseFloat($("aSize").value), widthIn: parseFloat($("aWidth").value), align: $("aAlign").value, color }); lastName = "rules-text.png";
+  }
+  applyBorder(cv);
+  return bad;
+}
+
+$("aSave").addEventListener("click", async () => {
+  const st = $("aStatus");
+  try {
+    const blob = await new Promise((res, rej) => { try { $("aCanvas").toBlob(b => b ? res(b) : rej(new Error("empty")), "image/png"); } catch (e) { rej(e); } });
+    await window.saveFile(lastName, blob);
+    st.textContent = `Saved ${lastName}.`;
+  } catch (e) {
+    st.textContent = e && e.code === "declined" ? "Save canceled." : "Couldn't save the PNG here. " + (e && e.message ? e.message : "");
+  }
+});
+
+bOpts(); showMode(); route();
+});
+</script>
+</body></html>
