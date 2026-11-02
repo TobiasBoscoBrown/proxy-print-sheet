@@ -103,6 +103,7 @@ ol.steps b{font-weight:600}
 .mrow b{min-width:1.3em;text-align:center;font-variant-numeric:tabular-nums}
 details summary{cursor:pointer;font-size:.9rem;font-weight:600;margin:4px 0}
 details input{margin-top:6px}
+.lookup{display:flex;gap:8px}.lookup input{flex:1;min-width:0}
 .field{display:flex;flex-direction:column;gap:6px}
 .field label{font-weight:600;font-size:.92rem}
 textarea,input[type=text],input[type=number]{font:500 1rem var(--body);padding:9px 10px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--ink);width:100%;resize:vertical}
@@ -182,6 +183,13 @@ textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--ac
   <section id="view-assets" hidden>
     <div class="grid">
       <div class="panel">
+        <h2>Fill from a real card</h2>
+        <div class="lookup">
+          <input id="aLookup" type="text" list="aLookupList" placeholder="Type a card name, like Sol Ring" autocomplete="off" aria-label="Card name to look up">
+          <datalist id="aLookupList"></datalist>
+          <button type="button" id="aLookupBtn">Fill</button>
+        </div>
+        <p class="hint" id="aLookupHint">Fills in the name, mana cost, type line, rules text, P/T and flavor text from Scryfall. You can still edit everything after.</p>
         <h2>Make</h2>
         <div class="seg wide" role="group" aria-label="Asset type">
           <button data-mode="name" aria-pressed="true">Name</button>
@@ -926,6 +934,47 @@ $("aSave").addEventListener("click", async () => {
     st.textContent = e && e.code === "declined" ? "Save canceled." : "Couldn't save the PNG here. " + (e && e.message ? e.message : "");
   }
 });
+
+// ---- fill from a real card (Scryfall) ----
+let acTimer = 0, acCtrl = null;
+$("aLookup").addEventListener("input", () => {
+  clearTimeout(acTimer);
+  const q = $("aLookup").value.trim(); if (q.length < 2) return;
+  acTimer = setTimeout(async () => {
+    try { if (acCtrl) acCtrl.abort(); acCtrl = new AbortController();
+      const r = await fetch("https://api.scryfall.com/cards/autocomplete?q=" + encodeURIComponent(q), { signal: acCtrl.signal });
+      const j = await r.json(); const dl = $("aLookupList"); dl.innerHTML = "";
+      (j.data || []).slice(0, 12).forEach(n => { const o = document.createElement("option"); o.value = n; dl.appendChild(o); });
+    } catch {}
+  }, 250);
+});
+async function fillFromCard(){
+  const q = $("aLookup").value.trim(), hint = $("aLookupHint"); if (!q) return;
+  hint.textContent = "Looking it up…";
+  try {
+    let r = await fetch("https://api.scryfall.com/cards/named?fuzzy=" + encodeURIComponent(q));
+    if (!r.ok){ // a partial name like "Kenrith" can match several cards, so take the best autocomplete match
+      const ac = await (await fetch("https://api.scryfall.com/cards/autocomplete?q=" + encodeURIComponent(q))).json();
+      if (ac.data && ac.data.length) r = await fetch("https://api.scryfall.com/cards/named?exact=" + encodeURIComponent(ac.data[0]));
+    }
+    if (!r.ok){ hint.textContent = `Couldn't find a card called "${q}". Check the spelling.`; return; }
+    const c = await r.json(), f = (c.card_faces && c.card_faces[0]) || c, get = k => f[k] ?? c[k] ?? "";
+    titleVals.name = get("name"); titleVals.type = get("type_line");
+    $("aRules").value = get("oracle_text");
+    const pw = get("power"), tg = get("toughness"), loy = get("loyalty");
+    $("aPT").value = pw !== "" && tg !== "" ? `${pw}/${tg}` : loy !== "" ? loy : "";
+    $("aCost").value = get("mana_cost"); $("aCost").dispatchEvent(new Event("input"));
+    let fl = get("flavor_text").trim(), by = "";
+    const lines = fl.split("\n"), last = lines[lines.length - 1];
+    if (lines.length > 1 && /^\s*[—–-]\s*\S/.test(last)){ by = last.replace(/^\s*[—–-]\s*/, ""); fl = lines.slice(0, -1).join("\n"); }
+    fl = fl.replace(/^[“"]\s*/, "").replace(/\s*[”"]$/, "");
+    $("aQuote").value = fl; $("aAttr").value = by;
+    hint.textContent = `Filled from ${c.name}.` + (c.card_faces ? " Two-faced card, so this is the front face." : "") + (fl ? "" : " It has no flavor text.");
+    showMode();
+  } catch { hint.textContent = "Couldn't reach Scryfall. Check your connection and try again."; }
+}
+$("aLookupBtn").addEventListener("click", fillFromCard);
+$("aLookup").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); fillFromCard(); } });
 
 bOpts(); showMode(); route();
 });
