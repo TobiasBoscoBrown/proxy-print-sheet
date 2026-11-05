@@ -299,9 +299,9 @@ textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--ac
           </div>
           <p class="hint">Pick one of your Shuffles card images and the canvas copies its exact width and height.</p>
           <button class="primary" id="aSave">Save PNG</button>
+          <button id="aShareAll" hidden>Save all images</button>
           <button id="aSaveAll">Save all as ZIP</button>
-          <button id="aShareAll" hidden>Share all (AirDrop, Messages)</button>
-          <p class="hint">Saves the name, mana cost, type line, P/T, rules text and flavor text in one go, plus the symbol if you picked an image.</p>
+          <p class="hint" id="aAllHint">Saves the name, mana cost, type line, P/T, rules text and flavor text in one go, plus the symbol if you picked an image.</p>
           <div class="status" id="aStatus" role="status"></div>
           <p class="hint">Transparent PNG at the canvas size, with the asset big in the middle. Resize it in Shuffles.</p>
         </div>
@@ -1015,7 +1015,9 @@ $("aSaveAll").addEventListener("click", async () => {
   } finally { b.disabled = false; }
 });
 (() => { try { const t = new File([new Blob(["x"], { type: "image/png" })], "t.png", { type: "image/png" });
-  if (navigator.canShare && navigator.canShare({ files: [t] })) $("aShareAll").hidden = false; } catch {} })();
+  if (navigator.canShare && navigator.canShare({ files: [t] })){
+    $("aShareAll").hidden = false; $("aShareAll").className = "primary"; $("aSaveAll").textContent = "Save as one ZIP instead";
+    $("aAllHint").textContent = "Save all images opens the share menu. Pick Save Images to put them in Photos, Save to Files, or AirDrop to send them straight to someone. Covers the name, mana cost, type line, P/T, rules text and flavor text, plus the symbol if you picked an image."; } } catch {} })();
 $("aShareAll").addEventListener("click", async () => {
   const st = $("aStatus"), b = $("aShareAll");
   b.disabled = true; st.textContent = "Making all the PNGs…";
@@ -1023,8 +1025,9 @@ $("aShareAll").addEventListener("click", async () => {
     const slug = slugName(), files = (await allAssets()).map(([n, blob]) => new File([blob], `${slug}-${n}`, { type: "image/png" }));
     st.textContent = "";
     await navigator.share({ files, title: `${titleVals.name} assets` });
+    st.textContent = `Shared ${files.length} images.`;
   } catch (e) {
-    st.textContent = e && e.name === "AbortError" ? "Share canceled." : "Sharing isn't allowed here. Use Save all as ZIP instead.";
+    st.textContent = e && e.name === "AbortError" ? "Canceled." : "The share menu isn't allowed here. Use the ZIP button instead.";
   } finally { b.disabled = false; }
 });
 bOpts(); showMode(); route();
