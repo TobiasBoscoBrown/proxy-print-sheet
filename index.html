@@ -697,13 +697,15 @@ function layout(ctx, paras, maxW, symSize){
   });
   return lines;
 }
+function smart(t){ return String(t || "").replace(/(^|[\s(\[{\u2014-])"/g, "$1\u201C").replace(/"/g, "\u201D").replace(/(^|[\s(\[{\u2014-])'/g, "$1\u2018").replace(/'/g, "\u2019"); }
 function drawText(cv, text, opts){
+  text = smart(text); opts = { ...opts, attr: opts.attr ? smart(opts.attr) : opts.attr };
   const { font, italic, pt, widthIn, align, color, attr } = opts;
   const px = pt / 72 * ADPI, maxW = widthIn * ADPI, lh = px * 1.18, sym = px * 0.82, pad = Math.round(px * 0.3);
   const fontStr = `${italic ? "italic " : ""}400 ${px}px "${font}", Georgia, serif`;
   const ctx = cv.getContext("2d"); ctx.font = fontStr;
   const lines = layout(ctx, tokens(text), maxW, sym);
-  let attrLine = attr ? "— " + attr : null, ax = 0, ay = 0, extra = 0;
+  let attrLine = attr ? "\u2014" + attr : null, ax = 0, ay = 0, extra = 0;
   if (attrLine){
     const aw = ctx.measureText(attrLine).width, last = lines[lines.length - 1] || { w: 0 };
     const lastEnd = (align === "center" ? (maxW - last.w) / 2 : 0) + last.w;
@@ -730,6 +732,7 @@ function drawText(cv, text, opts){
   return { wIn: cv.width / ADPI, hIn: cv.height / ADPI };
 }
 function drawTitle(cv, text, pt, color, font){
+  text = smart(text);
   const px = pt / 72 * ADPI, pad = Math.round(px * 0.3), f = `700 ${px}px "${font}", Georgia, serif`;
   const c0 = cv.getContext("2d"); c0.font = f; const w = c0.measureText(text).width;
   cv.width = Math.max(1, Math.ceil(w + pad * 2)); cv.height = Math.ceil(px * 1.25 + pad * 2);
