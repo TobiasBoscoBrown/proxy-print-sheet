@@ -121,6 +121,7 @@ textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--ac
 .swap-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .swap-row input[type=range]{flex:1;min-width:120px;accent-color:var(--accent)}
 .swap-note{font-size:.85rem;color:var(--muted);margin:0}
+@media (max-width:860px){#view-art .mat{order:-1}#view-art .swap-stage{min-height:0;padding:10px}#view-art .swap-stage canvas{max-height:46vh}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -1177,7 +1178,9 @@ bOpts(); showMode(); route();
     status("Loading the card…");
     try { S.card = await loadImage(src, cors); }
     catch { status(game === "ygo" ? "Couldn't load that card image here. Save it from YGOPRODeck and use Upload a card image instead." : "Couldn't load that card image."); return; }
-    S.cardName = name; S.cardGame = game; setFrame(frame); status("");
+    S.cardName = name; S.cardGame = game; setFrame(frame);
+    status(S.art ? "Loaded " + name + "." : "Loaded " + name + ". Now add your art.");
+    const b = cv.getBoundingClientRect(); if (b.bottom < 0 || b.top > innerHeight) cv.scrollIntoView({ behavior: "smooth", block: "center" });
   }
   function ygoSrc(id){
     return location.protocol.startsWith("http") && /vercel\.app$|localhost/.test(location.hostname) ? "/api/ygo-image?id=" + id : "https://images.ygoprodeck.com/images/cards/" + id + ".jpg";
