@@ -121,6 +121,10 @@ textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--ac
 .swap-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .swap-row input[type=range]{flex:1;min-width:120px;accent-color:var(--accent)}
 .swap-note{font-size:.85rem;color:var(--muted);margin:0}
+.swap-arts{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px}
+.swap-arts button{padding:0;border-radius:8px;overflow:hidden;border:2px solid var(--line);background:var(--chip);aspect-ratio:1}
+.swap-arts button[aria-pressed="true"]{border-color:var(--accent)}
+.swap-arts img{width:100%;height:100%;object-fit:cover;display:block}
 @media (max-width:860px){#view-art .mat{order:-1}#view-art .swap-stage{min-height:0;padding:10px}#view-art .swap-stage canvas{max-height:46vh}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -351,6 +355,7 @@ textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--ac
           <button type="button" id="swYfind">Find</button>
         </div>
         <div class="swap-results" id="swResults"></div>
+        <div id="swArtsWrap" class="field" hidden><label>Artwork</label><div class="swap-arts" id="swArts"></div></div>
       </div>
       <div id="swSrcFile" class="drop" hidden>
         <strong>Drop your art here</strong>
@@ -1228,7 +1233,7 @@ bOpts(); showMode(); route();
 
   async function findYgo(){
     const q = el("swYq").value.trim(); if (!q) return;
-    const box = el("swResults"); box.innerHTML = ""; status("Searching Yu-Gi-Oh! cards…");
+    const box = el("swResults"); box.innerHTML = ""; el("swArtsWrap").hidden = true; el("swArts").innerHTML = ""; status("Searching Yu-Gi-Oh! cards…");
     const api = qs => fetch("https://db.ygoprodeck.com/api/v7/cardinfo.php?" + qs).then(r => r.json()).then(j => j.data || []).catch(() => []);
     const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, "");
     const nq = norm(q);
@@ -1241,10 +1246,22 @@ bOpts(); showMode(); route();
     list.sort((a, b) => (norm(b.name) === nq) - (norm(a.name) === nq) || norm(b.name).startsWith(nq) - norm(a.name).startsWith(nq) || a.name.length - b.name.length);
     list = list.slice(0, 15);
     if (!list.length){ status("No Yu-Gi-Oh! card by that name. Check the spelling, or upload an image instead."); return; }
-    const pick = c => {
-      const id = c.card_images[0].id;
+    const loadArt = (c, id, n) => {
       status("Loading the art from " + c.name + "…");
-      useArt(proxied ? "/api/ygo-image?crop=1&id=" + id : "https://images.ygoprodeck.com/images/cards_cropped/" + id + ".jpg", c.name, true);
+      useArt(proxied ? "/api/ygo-image?crop=1&id=" + id : "https://images.ygoprodeck.com/images/cards_cropped/" + id + ".jpg", c.name + (n > 1 ? " (art " + n + ")" : ""), true);
+    };
+    const pick = c => {
+      const imgs = c.card_images || [], wrap = el("swArtsWrap"), arts = el("swArts");
+      arts.innerHTML = ""; wrap.hidden = imgs.length < 2;
+      imgs.forEach((im, k) => {
+        const b = document.createElement("button"); b.type = "button"; b.setAttribute("aria-label", c.name + " artwork " + (k + 1));
+        b.setAttribute("aria-pressed", k === 0);
+        const t = document.createElement("img"); t.loading = "lazy"; t.alt = ""; t.src = im.image_url_cropped || ("https://images.ygoprodeck.com/images/cards_cropped/" + im.id + ".jpg");
+        b.appendChild(t);
+        b.onclick = () => { arts.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); loadArt(c, im.id, imgs.length > 1 ? k + 1 : 1); };
+        arts.appendChild(b);
+      });
+      loadArt(c, imgs[0].id, 1);
     };
     status("Pick one:");
     list.forEach(c => {
