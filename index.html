@@ -1198,9 +1198,18 @@ bOpts(); showMode(); route();
         await useCard(face.png, c.name, "mtg", /Saga|Battle/.test(type) || c.border_color === "borderless" || c.full_art ? "custom" : "mtg", true);
         if (S.frame === "custom"){ S.rect = { ...FRAMES.mtg }; el("swEdit").checked = true; drawPreview(); status("This card uses an unusual frame. Drag the corners to fit the art box."); }
       } else {
-        const r = await fetch("https://db.ygoprodeck.com/api/v7/cardinfo.php?fname=" + encodeURIComponent(q) + "&num=15&offset=0");
-        const d = await r.json();
-        if (!d.data || !d.data.length){ status("No Yu-Gi-Oh! card by that name."); return; }
+        const api = qs => fetch("https://db.ygoprodeck.com/api/v7/cardinfo.php?" + qs).then(r => r.json()).then(j => j.data || []).catch(() => []);
+        const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+        const nq = norm(q);
+        let list = await api("fname=" + encodeURIComponent(q));
+        if (!list.length){
+          // YGOPRODeck needs exact spelling ("Blue-Eyes", not "blue eyes"), so search one word and match the rest here
+          const words = q.split(/[^A-Za-z0-9]+/).filter(w => w.length >= 3).sort((a, b) => b.length - a.length);
+          for (const w of words){ list = (await api("fname=" + encodeURIComponent(w))).filter(c => norm(c.name).includes(nq)); if (list.length) break; }
+        }
+        list.sort((a, b) => (norm(b.name) === nq) - (norm(a.name) === nq) || norm(b.name).startsWith(nq) - norm(a.name).startsWith(nq) || a.name.length - b.name.length);
+        const d = { data: list.slice(0, 15) };
+        if (!d.data.length){ status("No Yu-Gi-Oh! card by that name. Check the spelling, or use Upload a card image."); return; }
         status(d.data.length === 1 ? "" : "Pick one:");
         const pick = c => useCard(ygoSrc(c.card_images[0].id), c.name, "ygo", /Pendulum/.test(c.type) ? "pend" : "ygo", true);
         if (d.data.length === 1){ pick(d.data[0]); return; }
