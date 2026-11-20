@@ -1390,7 +1390,7 @@ bOpts(); showMode(); route();
     const list = data[deck], grid = el("comGrid");
     el("comNote").textContent = deck === "spencer"
       ? "Spencer's 30: each Magic card and the Yu-Gi-Oh! card it becomes. Make it opens Art swap with that card and art loaded."
-      : "Alex's 30: each Magic card and the subtitled JoJo art it gets. Make it opens Art swap with that card and art loaded.";
+      : "Alex's 30: each Magic card and the JoJo art it gets. Make it opens Art swap with that card and art loaded.";
     grid.innerHTML = list.map((c, i) => {
       const shown = deck === "spencer" ? ygo(c.ygo) : c.art;
       return `<article class="com-item">
