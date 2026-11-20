@@ -1,0 +1,426 @@
+{
+ "spencer": [
+  {
+   "card": "Kaust, Eyes of the Glade",
+   "img": "https://cards.scryfall.io/normal/front/6/4/648c15d1-a2a2-4f59-9b0a-5448be3e990f.jpg?1783913056",
+   "as": "Dark Magician",
+   "why": "Yugi's signature card. Kaust runs the face-down game: he flips your set monsters mid-battle and draws when they hit.",
+   "ygo": 46986414
+  },
+  {
+   "card": "Yarus, Roar of the Old Gods",
+   "img": "https://cards.scryfall.io/normal/front/3/2/326845a7-7502-4dc3-8f3e-867d6c84e931.jpg?1783912832",
+   "as": "Call of the Haunted",
+   "why": "Keeps bringing your fallen face-down monsters back. Kept on purpose even though it's a creature matching a trap.",
+   "ygo": 97077563
+  },
+  {
+   "card": "Krosan Cloudscraper",
+   "img": "https://cards.scryfall.io/normal/front/c/1/c1fab763-4e62-418d-b3a6-77c52bf21f23.jpg?1783912991",
+   "as": "Obelisk the Tormentor",
+   "why": "A 13/13 god hiding as a 2/2. Flip it and it ends games.",
+   "ygo": 10000000
+  },
+  {
+   "card": "Akroma, Angel of Fury",
+   "img": "https://cards.scryfall.io/normal/front/2/b/2b5ac7bd-3788-4c8b-b945-c1105986807a.jpg?1789644294",
+   "as": "Slifer the Sky Dragon",
+   "why": "Red flying god-tier monster that can be set face down.",
+   "ygo": 10000020
+  },
+  {
+   "card": "Exalted Angel",
+   "img": "https://cards.scryfall.io/normal/front/7/a/7a6b087b-a3ac-4c4d-a519-ec5584b4b42d.jpg?1783913032",
+   "as": "The Winged Dragon of Ra",
+   "why": "The third Egyptian God. With Krosan Cloudscraper and Akroma it completes the Onslaught morph trio, one god per color, all summoned face down and flipped by Kaust. Gains life equal to its damage, tied to Ra's life points.",
+   "ygo": 10000010
+  },
+  {
+   "card": "Ugin, the Spirit Dragon",
+   "img": "https://cards.scryfall.io/normal/front/9/c/9c017fa9-7021-417a-9c2e-3df409644fcf.jpg?1783930748",
+   "as": "Blue-Eyes White Dragon (art 1)",
+   "why": "Blue-Eyes #1, the true one. Its -X is White Lightning: it wipes every colored permanent, while face-down monsters survive.",
+   "ygo": 89631139
+  },
+  {
+   "card": "Scion of Ugin",
+   "img": "https://cards.scryfall.io/normal/front/2/9/2904aaaa-cd25-4c05-9d57-4c5a951ac6d9.jpg?1783935561",
+   "as": "Blue-Eyes White Dragon (art 3)",
+   "why": "Blue-Eyes #2. A plain flying dragon with no abilities, just raw size. Imperial Hellkite can fetch it.",
+   "ygo": 89631141
+  },
+  {
+   "card": "Shieldhide Dragon",
+   "img": "https://cards.scryfall.io/normal/front/f/c/fcfd0af4-44e1-424b-8e55-87f84a42d40a.jpg?1783938612",
+   "as": "Blue-Eyes White Dragon (art 2)",
+   "why": "Blue-Eyes #3. A white flying dragon that summons face down. When it flips, every other Dragon you control gets a +1/+1 counter. Imperial Hellkite can fetch it.",
+   "ygo": 89631140
+  },
+  {
+   "card": "Imperial Hellkite",
+   "img": "https://cards.scryfall.io/normal/front/c/f/cffb1feb-9368-4d91-bd4b-36a24fe849e6.jpg?1783912997",
+   "as": "Red-Eyes Black Dragon",
+   "why": "A 6/6 red flying dragon that summons face down. When it flips it searches for a Dragon, like Red-Eyes pulling out other dragons. With Pyrotechnic Performer out, flipping it hits each opponent for 6.",
+   "ygo": 74677422
+  },
+  {
+   "card": "Spore Frog",
+   "img": "https://cards.scryfall.io/normal/front/6/d/6d42fd52-34ea-4d1b-80dc-58fb0593bb5b.jpg?1783933092",
+   "as": "Kuriboh",
+   "why": "Sacrifice it and you take no combat damage this turn. That's Kuriboh's whole job.",
+   "ygo": 40640057
+  },
+  {
+   "card": "Essence of Antiquity",
+   "img": "https://cards.scryfall.io/normal/front/a/e/aee2945d-bf6d-4328-a482-df24c2973b56.jpg?1783912926",
+   "as": "Big Shield Gardna",
+   "why": "A 1/10 wall set face down with disguise, like Gardna's 100 ATK / 2600 DEF. Flip it when attacked, and your whole board gains hexproof and untaps, like Gardna negating spells that target a monster.",
+   "ygo": 65240384
+  },
+  {
+   "card": "Dragon Whelp",
+   "img": "https://cards.scryfall.io/normal/front/d/3/d3f7b4a5-6096-4e19-bfa6-e44b85f53387.jpg?1783908693",
+   "as": "Baby Dragon",
+   "why": "A small red dragon that can grow strong.",
+   "ygo": 88819587
+  },
+  {
+   "card": "Deathmist Raptor",
+   "img": "https://cards.scryfall.io/normal/front/e/d/ed6e6cf5-8fb7-4ba6-943a-e5aa14a3ee92.jpg?1783909607",
+   "as": "Sinister Serpent",
+   "why": "Keeps returning from the graveyard.",
+   "ygo": 8131171
+  },
+  {
+   "card": "Ashcloud Phoenix",
+   "img": "https://cards.scryfall.io/normal/front/f/6/f628c7de-516b-4907-a3c8-b6361f2bd071.jpg?1783913000",
+   "as": "Sacred Phoenix of Nephthys",
+   "why": "Dies and comes right back, burning everyone.",
+   "ygo": 61441708
+  },
+  {
+   "card": "Whisperwood Elemental",
+   "img": "https://cards.scryfall.io/normal/front/f/5/f522f32d-e510-4128-98ae-d3c0f684b899.jpg?1783909598",
+   "as": "Cyber Jar",
+   "why": "Puts new monsters onto the field face down from the top of your deck.",
+   "ygo": 34124316
+  },
+  {
+   "card": "Den Protector",
+   "img": "https://cards.scryfall.io/normal/front/c/2/c22d8b77-4274-48ae-a36f-5739d785b599.jpg?1783912992",
+   "as": "Magician of Faith",
+   "why": "Flips face up and gets a card back from the graveyard.",
+   "ygo": 31560081
+  },
+  {
+   "card": "Hidden Dragonslayer",
+   "img": "https://cards.scryfall.io/normal/front/b/2/b29a3e7c-4d19-4737-9b58-deb56de26118.jpg?1783913030",
+   "as": "Man-Eater Bug",
+   "why": "Set face down, then flip it to destroy an opponent's creature with 4 or more power, like Man-Eater Bug eating a monster when it flips. Gains lifelink and a +1/+1 counter.",
+   "ygo": 54652250
+  },
+  {
+   "card": "Pyrotechnic Performer",
+   "img": "https://cards.scryfall.io/normal/front/0/f/0fa5671b-2651-4944-a50a-c768ec70229e.jpg?1783912874",
+   "as": "Stealth Bird",
+   "why": "Burns your opponents every time one of your monsters flips.",
+   "ygo": 3510565
+  },
+  {
+   "card": "Sol Ring",
+   "img": "https://cards.scryfall.io/normal/front/f/c/fc817e07-c1f3-469f-9cf7-0945dea7400f.jpg?1793021181",
+   "as": "Polymerization",
+   "why": "The card every deck runs. Kept by request.",
+   "ygo": 24094653
+  },
+  {
+   "card": "Breath of Life",
+   "img": "https://cards.scryfall.io/normal/front/d/6/d6828916-c19e-4857-a6ba-047b81314d1f.jpg?1783939327",
+   "as": "Monster Reborn",
+   "why": "Puts a creature from your graveyard straight onto the battlefield.",
+   "ygo": 83764719
+  },
+  {
+   "card": "Harmonize",
+   "img": "https://cards.scryfall.io/normal/front/4/e/4e9c9e24-7f41-402c-b346-e553cee90c58.jpg?1793281397",
+   "as": "Pot of Greed",
+   "why": "Just draws cards.",
+   "ygo": 55144522
+  },
+  {
+   "card": "Disaster Radius",
+   "img": "https://cards.scryfall.io/normal/front/b/a/ba63c385-7eb8-4ddb-ae27-2b5921cd0525.jpg?1783934748",
+   "as": "Raigeki",
+   "why": "Damages only your opponents' creatures.",
+   "ygo": 12580477
+  },
+  {
+   "card": "Doomskar",
+   "img": "https://cards.scryfall.io/normal/front/1/3/130ee895-1e5e-4f82-bb66-e1275bac75dd.jpg?1783928285",
+   "as": "Dark Hole",
+   "why": "Destroys every creature. It can even be set face down with foretell.",
+   "ygo": 53129443
+  },
+  {
+   "card": "Unleash Fury",
+   "img": "https://cards.scryfall.io/normal/front/e/2/e2957a81-f6f8-4515-804c-57a2957f0bc8.jpg?1783908664",
+   "as": "Limiter Removal",
+   "why": "Doubles a creature's power for the turn.",
+   "ygo": 23171610
+  },
+  {
+   "card": "Goblin Bombardment",
+   "img": "https://cards.scryfall.io/normal/front/e/2/e262f55e-9239-4a97-a19e-9b08fb34502e.jpg?1783926784",
+   "as": "Cannon Soldier",
+   "why": "Sacrifice your own monsters to shoot your opponent. Kept even though it's an enchantment matching a monster.",
+   "ygo": 11384280
+  },
+  {
+   "card": "Settle the Wreckage",
+   "img": "https://cards.scryfall.io/normal/front/3/1/31a7a5e2-4cb8-48fc-8351-18344b4a7560.jpg?1785496349",
+   "as": "Mirror Force",
+   "why": "Exiles every attacking creature a player controls. As close to Mirror Force as Magic gets.",
+   "ygo": 44095762
+  },
+  {
+   "card": "Pitfall Trap",
+   "img": "https://cards.scryfall.io/normal/front/1/0/109a4596-552a-45dc-88a6-41810d078d66.jpg?1783936678",
+   "as": "Trap Hole",
+   "why": "A real Magic Trap card: a pit that destroys an attacking creature.",
+   "ygo": 4206964
+  },
+  {
+   "card": "Inferno Trap",
+   "img": "https://cards.scryfall.io/normal/front/8/c/8c8e6ca4-9678-4032-aca5-c74aac7cd897.jpg?1783939105",
+   "as": "Sakuretsu Armor",
+   "why": "A real Magic Trap: 4 damage to a creature, cheap once you've been hit.",
+   "ygo": 56120475
+  },
+  {
+   "card": "Ricochet Trap",
+   "img": "https://cards.scryfall.io/normal/front/5/d/5d782375-9192-4ed0-bd79-f3404e5a1b01.jpg?1783942048",
+   "as": "Magic Cylinder",
+   "why": "A real Magic Trap that turns a spell back on its caster.",
+   "ygo": 62279055
+  },
+  {
+   "card": "Swords to Plowshares",
+   "img": "https://cards.scryfall.io/normal/front/4/6/4645eebf-c9fc-4ee7-b646-61dc1205b4b0.jpg?1793111861",
+   "as": "Fissure",
+   "why": "One white mana, instant speed, and the monster is exiled for good. No graveyard to come back from, so it really falls through the crack.",
+   "ygo": 66788016
+  }
+ ],
+ "alex": [
+  {
+   "card": "Obeka, Splitter of Seconds",
+   "img": "https://cards.scryfall.io/normal/front/0/3/03415c42-086e-4a2e-9be8-5cdcde83f134.jpg?1783911787",
+   "as": "DIO / The World",
+   "why": "Every point of combat damage gives you an extra upkeep. Hit for 5 and time stops for five upkeeps. ZA WARUDO! Its menace is the famous \u30b4\u30b4\u30b4\u30b4 \"Menacing\" text.",
+   "art": "commissions/alex/01.jpg"
+  },
+  {
+   "card": "As Foretold",
+   "img": "https://cards.scryfall.io/normal/front/c/4/c468b523-84fc-4657-adef-acc1eec6ef2e.jpg?1783921922",
+   "as": "Thoth (Boingo)",
+   "why": "Boingo's comic predicts the future and it always comes true. Each upkeep the prophecy grows and makes a spell free.",
+   "art": "commissions/alex/02.jpg"
+  },
+  {
+   "card": "Court of Ire",
+   "img": "https://cards.scryfall.io/normal/front/7/3/73ca0dcc-7a87-49da-8011-8c11a8835df2.jpg?1783928819",
+   "as": "DIO's Mansion",
+   "why": "You rule Cairo. Every upkeep the mansion strikes for 7 while you're the monarch.",
+   "art": "commissions/alex/03.jpg"
+  },
+  {
+   "card": "Mechanized Production",
+   "img": "https://cards.scryfall.io/normal/front/e/a/eaf86997-68e8-4c37-99f1-db10ac08f54c.jpg?1783913014",
+   "as": "DIO's Knife Barrage",
+   "why": "Dio throws knives while time is stopped. Copy an artifact every upkeep, and eight copies wins the game.",
+   "art": "commissions/alex/04.jpg"
+  },
+  {
+   "card": "Bloodgift Demon",
+   "img": "https://cards.scryfall.io/normal/front/0/4/04151a78-eb5a-4cb2-aa1f-e4835f3124c1.jpg?1783908739",
+   "as": "Vanilla Ice",
+   "why": "He offered his own blood to Dio. Each upkeep someone draws and loses life.",
+   "art": "commissions/alex/05.jpg"
+  },
+  {
+   "card": "Dominus of Fealty",
+   "img": "https://cards.scryfall.io/normal/front/9/1/91433559-ad01-4bde-b0c0-f9cbb3589e89.jpg?1783941180",
+   "as": "DIO's Charisma",
+   "why": "Dio enthralls anyone he meets. Each upkeep, take one of their permanents for the turn.",
+   "art": "commissions/alex/06.jpg"
+  },
+  {
+   "card": "Mind Unbound",
+   "img": "https://cards.scryfall.io/normal/front/f/d/fd90cf36-9841-4adf-b5cb-0a7bf103eb93.jpg?1783941089",
+   "as": "Hermit Purple",
+   "why": "Joseph's spirit photography shows more every time. Draw one, then two, then three.",
+   "art": "commissions/alex/07.jpg"
+  },
+  {
+   "card": "Jhoira of the Ghitu",
+   "img": "https://cards.scryfall.io/normal/front/a/a/aa6c3c8a-aa35-46b3-8769-27b4244457b0.jpg?1783927761",
+   "as": "Enya the Hag",
+   "why": "Dio's Stand teacher. Gives any card a timer, so Obeka's extra upkeeps fire it early.",
+   "art": "commissions/alex/08.jpg"
+  },
+  {
+   "card": "Ancestral Vision",
+   "img": "https://cards.scryfall.io/normal/front/9/e/9ec075ba-db56-4dcf-b1dc-fe6270b7ab36.jpg?1783907110",
+   "as": "\"Your next line is...\"",
+   "why": "Joseph predicts exactly what's coming. Three cards, later.",
+   "art": "commissions/alex/09.jpg"
+  },
+  {
+   "card": "Inevitable Betrayal",
+   "img": "https://cards.scryfall.io/normal/front/7/1/71725895-38cd-4017-bbf0-0b7dc9b5db60.jpg?1783926877",
+   "as": "\"But it was me, DIO!\"",
+   "why": "You thought it was your creature. Steal the best one from their deck.",
+   "art": "commissions/alex/10.jpg"
+  },
+  {
+   "card": "Arc Blade",
+   "img": "https://cards.scryfall.io/normal/front/9/2/92b8fe7c-fe36-4f6d-9c7f-85286b745865.jpg?1783927804",
+   "as": "Anubis",
+   "why": "The cursed sword that keeps coming back. Deals 2, then returns.",
+   "art": "commissions/alex/11.jpg"
+  },
+  {
+   "card": "Shivan Meteor",
+   "img": "https://cards.scryfall.io/normal/front/c/b/cb5a98f0-ceb4-4e23-b2ec-1c4f4e4e22aa.jpg?1783927788",
+   "as": "ROAD ROLLER DA!",
+   "why": "Dio drops a road roller from the sky. Thirteen damage to a creature.",
+   "art": "commissions/alex/12.jpg"
+  },
+  {
+   "card": "Suspended Sentence",
+   "img": "https://cards.scryfall.io/normal/front/3/8/38c98aa0-bfa1-42f4-b035-a48dac86f0ce.jpg?1783909657",
+   "as": "Emperor (Hol Horse)",
+   "why": "A bullet that curves and finds you later. Destroy a creature, they lose 3, and it comes back.",
+   "art": "commissions/alex/13.jpg"
+  },
+  {
+   "card": "Deep-Sea Kraken",
+   "img": "https://cards.scryfall.io/normal/front/d/f/df5a543e-8416-4f01-91f5-e1ed87f1a510.jpg?1783936580",
+   "as": "Dark Blue Moon",
+   "why": "The sea Stand from the ship. An unblockable 6/6 surfacing from the deep.",
+   "art": "commissions/alex/14.jpg"
+  },
+  {
+   "card": "Greater Gargadon",
+   "img": "https://cards.scryfall.io/normal/front/7/6/76bf6bf0-4821-41eb-bacc-32e9a2d47845.jpg?1783921887",
+   "as": "The Pillar Men Awaken",
+   "why": "They slept for thousands of years. A 9/7 that wakes up when the timer runs out. Play the \"Awaken\" theme.",
+   "art": "commissions/alex/15.jpg"
+  },
+  {
+   "card": "Jhoira's Timebug",
+   "img": "https://cards.scryfall.io/normal/front/3/5/35d14746-3b57-4f8e-8155-e578cc84850d.jpg?1783927754",
+   "as": "Sethan (Alessi)",
+   "why": "The shadow that turns back age. Add or remove time counters.",
+   "art": "commissions/alex/16.jpg"
+  },
+  {
+   "card": "Key to the City",
+   "img": "https://cards.scryfall.io/normal/front/f/2/f2103bba-f367-45ed-9b2c-bf31bb2926a5.jpg?1783927512",
+   "as": "Za Hando (The Hand)",
+   "why": "Okuyasu erases the space between you and the target, so nothing stands in the way. Discard a card and Obeka can't be blocked, and it draws you cards when it untaps.",
+   "art": "commissions/alex/17.jpg"
+  },
+  {
+   "card": "Aqueous Form",
+   "img": "https://cards.scryfall.io/normal/front/c/8/c859f7cb-ac12-490e-b769-6f019791f2a5.jpg?1783928870",
+   "as": "Geb (N'Doul)",
+   "why": "A water Stand that slips past everything. Unblockable.",
+   "art": "commissions/alex/18.jpg"
+  },
+  {
+   "card": "Whispersilk Cloak",
+   "img": "https://cards.scryfall.io/normal/front/a/3/a3f31ac4-09ca-4712-a311-50d28824bfad.jpg?1783903208",
+   "as": "Hanged Man (J. Geil)",
+   "why": "Lives only in reflections, so you can't touch it. Unblockable with shroud.",
+   "art": "commissions/alex/19.jpg"
+  },
+  {
+   "card": "Artful Dodge",
+   "img": "https://cards.scryfall.io/normal/front/d/e/de6ce6aa-e19f-4299-9807-e68920e63c73.jpg?1783940845",
+   "as": "\"Nigerundayo!\"",
+   "why": "The Joestar secret technique: run away. Unblockable, and you can do it twice.",
+   "art": "commissions/alex/20.jpg"
+  },
+  {
+   "card": "Distortion Strike",
+   "img": "https://cards.scryfall.io/normal/front/5/7/57556595-8ede-4a35-b3a4-0e6f8bfc4d9d.jpg?1783935548",
+   "as": "To Be Continued \u21e6",
+   "why": "Rebound literally continues next turn. Unblockable now, and again next upkeep.",
+   "art": "commissions/alex/21.jpg"
+  },
+  {
+   "card": "Sol Ring",
+   "img": "https://cards.scryfall.io/normal/front/f/c/fc817e07-c1f3-469f-9cf7-0945dea7400f.jpg?1793021181",
+   "as": "Stone Mask",
+   "why": "Where it all started in Part 1. The most powerful item in the deck.",
+   "art": "commissions/alex/22.jpg"
+  },
+  {
+   "card": "Lotus Blossom",
+   "img": "https://cards.scryfall.io/normal/front/c/5/c5b92fd6-e3a7-4d50-b94f-1508a830b799.jpg?1783918413",
+   "as": "\"WRYYYY! HIGHEST HIGH!\"",
+   "why": "Dio's scream after drinking Joseph's blood. Grows every upkeep, then explodes into mana.",
+   "art": "commissions/alex/23.jpg"
+  },
+  {
+   "card": "Bedevil",
+   "img": "https://cards.scryfall.io/normal/front/9/8/985b9779-b8f6-4d7e-9490-5d2b91ee8db2.jpg?1783903227",
+   "as": "MUDA MUDA MUDA",
+   "why": "The World's rush. Destroys an artifact, creature, or planeswalker.",
+   "art": "commissions/alex/24.jpg"
+  },
+  {
+   "card": "Infernal Grasp",
+   "img": "https://cards.scryfall.io/normal/front/f/6/f67b323d-0dda-45f8-84b7-d883ce5045a8.jpg?1783903785",
+   "as": "Vaporizing Freeze",
+   "why": "Dio freezes you solid by touch. Destroy a creature.",
+   "art": "commissions/alex/25.jpg"
+  },
+  {
+   "card": "Blasphemous Act",
+   "img": "https://cards.scryfall.io/normal/front/7/d/7d4b1d44-126e-4987-9a9f-f0f9627a09cb.jpg?1783903234",
+   "as": "The Sun (Arabia Fats)",
+   "why": "A Stand that's literally the sun. Thirteen damage to every creature.",
+   "art": "commissions/alex/26.jpg"
+  },
+  {
+   "card": "Time Stop",
+   "img": "https://cards.scryfall.io/normal/front/d/9/d938603b-0f1e-44c4-b86e-38e15f4a0d27.jpg?1783909077",
+   "as": "\"ZA WARUDO! TOKI WO TOMARE!\"",
+   "why": "A Magic card literally named Time Stop. End the turn, and every spell and ability on the stack is gone.",
+   "art": "commissions/alex/27.jpg"
+  },
+  {
+   "card": "The Ninth Doctor",
+   "img": "https://cards.scryfall.io/normal/front/7/4/74785b3b-44df-4555-a036-082572b7f4e7.jpg?1783914627",
+   "as": "Star Platinum: The World",
+   "why": "Jotaro can stop time too. Every untap gives you an extra upkeep.",
+   "art": "commissions/alex/28.jpg"
+  },
+  {
+   "card": "All of History, All at Once",
+   "img": "https://cards.scryfall.io/normal/front/b/b/bb6c639c-0b8a-4369-b7d0-57aa1f83279a.jpg?1783914674",
+   "as": "Made in Heaven",
+   "why": "Pucci's Stand speeds up time itself. Every timer moves, once for each spell cast this turn.",
+   "art": "commissions/alex/29.jpg"
+  },
+  {
+   "card": "The Moment",
+   "img": "https://cards.scryfall.io/normal/front/f/2/f233e7db-321f-4ab1-ae49-e45eae188f3f.jpg?1783914614",
+   "as": "Gold Experience Requiem",
+   "why": "Returns everything to zero. Hides your creature, then can wipe the board.",
+   "art": "commissions/alex/30.jpg"
+  }
+ ]
+}

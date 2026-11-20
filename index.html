@@ -121,6 +121,18 @@ textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--ac
 .swap-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .swap-row input[type=range]{flex:1;min-width:120px;accent-color:var(--accent)}
 .swap-note{font-size:.85rem;color:var(--muted);margin:0}
+.com-head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin:0 0 16px}
+.com-head h2{margin:0}
+.com-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px}
+.com-item{background:var(--panel,#fff);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.com-item h3{font-size:1rem;margin:0;line-height:1.3}
+.com-item h3 span{color:var(--muted);font-weight:500}
+.com-pair{display:grid;grid-template-columns:1fr auto 1.25fr;gap:8px;align-items:center}
+.com-pair img{width:100%;border-radius:8px;display:block;background:var(--chip)}
+.com-pair .arrow{color:var(--accent);font-weight:700;font-size:1.3rem}
+.com-why{font-size:.85rem;color:var(--muted);margin:0}
+.com-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+.com-actions a,.com-actions button{font-size:.85rem}
 .swap-arts{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px}
 .swap-arts button{padding:0;border-radius:8px;overflow:hidden;border:2px solid var(--line);background:var(--chip);aspect-ratio:1}
 .swap-arts button[aria-pressed="true"]{border-color:var(--accent)}
@@ -135,7 +147,7 @@ textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--ac
     <p>Lay out proxy cards at true size for printing, and make names, type lines, P/T, rules text, symbols and flavor text as transparent PNGs.</p>
     <div class="spec">63 × 88 MM · 300 DPI · 9 CARDS PER SHEET</div>
   </header>
-  <nav class="tabs" aria-label="Tools"><a href="#sheet" aria-current="page">Print sheet</a><a href="#assets" aria-current="false">Card assets</a><a href="#art" aria-current="false">Art swap</a></nav>
+  <nav class="tabs" aria-label="Tools"><a href="#sheet" aria-current="page">Print sheet</a><a href="#assets" aria-current="false">Card assets</a><a href="#art" aria-current="false">Art swap</a><a href="#commissions" aria-current="false">Commissions</a></nav>
 
   <section id="view-sheet">
   <div class="grid">
@@ -399,6 +411,14 @@ textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--ac
       <div class="swap-stage"><canvas id="swCanvas" width="745" height="1040" aria-label="Card preview"></canvas></div>
     </div>
   </div>
+  </section>
+  <section id="view-commissions" hidden>
+    <div class="com-head">
+      <h2>Commissions</h2>
+      <div class="seg" role="group" aria-label="Deck"><button type="button" data-com="spencer" aria-pressed="true">Spencer · Yu-Gi-Oh!</button><button type="button" data-com="alex" aria-pressed="false">Alex · JoJo</button></div>
+    </div>
+    <p class="swap-note" id="comNote" style="margin:0 0 14px"></p>
+    <div class="com-grid" id="comGrid"></div>
   </section>
 </div>
 
@@ -682,11 +702,12 @@ function setSymColors(bold){ for (const k in SYM) symImgs[k].src = manaSrc(k, bo
 
 // ---- view switching ----
 function route(){
-  const v = location.hash === "#assets" ? "assets" : location.hash === "#art" ? "art" : "sheet";
-  $("view-sheet").hidden = v !== "sheet"; $("view-assets").hidden = v !== "assets"; $("view-art").hidden = v !== "art";
+  const v = ({ "#assets": "assets", "#art": "art", "#commissions": "commissions" })[location.hash] || "sheet";
+  $("view-sheet").hidden = v !== "sheet"; $("view-assets").hidden = v !== "assets"; $("view-art").hidden = v !== "art"; $("view-commissions").hidden = v !== "commissions";
   document.querySelectorAll(".tabs a").forEach(a => a.setAttribute("aria-current", a.getAttribute("href") === "#" + v ? "page" : "false"));
   if (v === "assets") draw();
   if (v === "art" && window.__swapDraw) window.__swapDraw();
+  if (v === "commissions" && window.__comLoad) window.__comLoad();
 }
 window.addEventListener("hashchange", route);
 
@@ -1350,7 +1371,51 @@ bOpts(); showMode(); route();
     render(); setCopies(1);
     status("Added to the print sheet. Pick new art or a new card for the next one.");
   });
+  window.__swapLoad = async ({ card, art, artName }) => {
+    location.hash = "#art";
+    el("swQ").value = card; await findCard();
+    if (art){ setSrc(art.includes("/api/ygo-image") ? "ygo" : "file"); await useArt(art, artName, true); }
+  };
   blank();
+})();
+</script>
+<script>
+(() => {
+  const el = id => document.getElementById(id);
+  let data = null, deck = "spencer";
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const proxied = location.protocol.startsWith("http") && /vercel\.app$|localhost/.test(location.hostname);
+  const ygo = (id, crop) => proxied ? "/api/ygo-image?" + (crop ? "crop=1&" : "") + "id=" + id : "https://images.ygoprodeck.com/images/" + (crop ? "cards_cropped/" : "cards/") + id + ".jpg";
+  function render(){
+    const list = data[deck], grid = el("comGrid");
+    el("comNote").textContent = deck === "spencer"
+      ? "Spencer's 30: each Magic card and the Yu-Gi-Oh! card it becomes. Make it opens Art swap with that card and art loaded."
+      : "Alex's 30: each Magic card and the subtitled JoJo art it gets. Make it opens Art swap with that card and art loaded.";
+    grid.innerHTML = list.map((c, i) => {
+      const shown = deck === "spencer" ? ygo(c.ygo) : c.art;
+      return `<article class="com-item">
+        <h3>${String(i + 1).padStart(2, "0")}. ${esc(c.card)} <span>→ ${esc(c.as)}</span></h3>
+        <div class="com-pair"><img loading="lazy" src="${esc(c.img)}" alt="${esc(c.card)}"><span class="arrow" aria-hidden="true">→</span><img loading="lazy" src="${esc(shown)}" alt="${esc(c.as)}"></div>
+        <p class="com-why">${esc(c.why)}</p>
+        <div class="com-actions"><button type="button" class="small primary" data-make="${i}">Make it</button><a class="btn small" href="${esc(deck === "spencer" ? ygo(c.ygo, true) : c.art)}" download="${esc(String(i + 1).padStart(2, "0") + " " + c.as + " - for " + c.card)}" target="_blank" rel="noopener">Download art</a></div>
+      </article>`;
+    }).join("");
+  }
+  el("comGrid").addEventListener("click", e => {
+    const b = e.target.closest("[data-make]"); if (!b) return;
+    const c = data[deck][+b.dataset.make];
+    window.__swapLoad({ card: c.card, art: deck === "spencer" ? ygo(c.ygo, true) : c.art, artName: c.as });
+  });
+  document.querySelectorAll("[data-com]").forEach(b => b.addEventListener("click", () => {
+    deck = b.dataset.com; document.querySelectorAll("[data-com]").forEach(x => x.setAttribute("aria-pressed", x === b)); if (data) render();
+  }));
+  window.__comLoad = async () => {
+    if (data) return;
+    el("comNote").textContent = "Loading…";
+    try { data = await (await fetch("commissions/data.json")).json(); render(); }
+    catch { el("comNote").textContent = "Couldn't load the commission list."; }
+  };
+  if (location.hash === "#commissions") window.__comLoad();
 })();
 </script>
 </body></html>
