@@ -373,6 +373,7 @@ textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--ac
       <div class="field">
         <label for="swFill">Art box background</label>
         <div class="swap-row"><input type="color" id="swFill" value="#000000" aria-label="Art box background color"><span class="swap-note">Shows if the art is smaller than the box.</span></div>
+        <label class="swap-row" style="font-weight:500"><input type="checkbox" id="swClear"> Save the art box clear (see-through PNG)</label>
       </div>
       <div class="field">
         <label for="swFrame">Art box</label>
@@ -1142,7 +1143,15 @@ bOpts(); showMode(); route();
     ctx.drawImage(S.card, 0, 0, W, H);
     const R = { x: S.rect.x * W, y: S.rect.y * H, w: S.rect.w * W, h: S.rect.h * H };
     ctx.save(); ctx.beginPath(); ctx.rect(R.x, R.y, R.w, R.h); ctx.clip();
-    ctx.fillStyle = el("swFill").value; ctx.fillRect(R.x, R.y, R.w, R.h);
+    if (el("swClear").checked){
+      ctx.clearRect(R.x, R.y, R.w, R.h);
+      if (overlay){ // checkerboard in the preview so the clear area is visible
+        const s = Math.max(10, Math.round(W / 50));
+        for (let y = 0; y < R.h; y += s) for (let x = 0; x < R.w; x += s){
+          ctx.fillStyle = ((x / s + y / s) & 1) ? "#cfcfcf" : "#f4f4f4"; ctx.fillRect(R.x + x, R.y + y, s, s);
+        }
+      }
+    } else { ctx.fillStyle = el("swFill").value; ctx.fillRect(R.x, R.y, R.w, R.h); }
     if (S.art){
       const aw = S.art.naturalWidth, ah = S.art.naturalHeight;
       const sc = Math.max(R.w / aw, R.h / ah) * S.zoom, dw = aw * sc, dh = ah * sc;
@@ -1174,6 +1183,7 @@ bOpts(); showMode(); route();
   el("swFrame").addEventListener("change", e => { setFrame(e.target.value); if (e.target.value === "custom") el("swEdit").checked = true; drawPreview(); });
   el("swEdit").addEventListener("change", drawPreview);
   el("swFill").addEventListener("input", drawPreview);
+  el("swClear").addEventListener("change", () => { el("swFill").disabled = el("swClear").checked; drawPreview(); });
 
   const loadImage = (src, cors) => new Promise((ok, bad) => { const im = new Image(); if (cors) im.crossOrigin = "anonymous"; im.onload = () => ok(im); im.onerror = bad; im.src = src; });
   const readFile = f => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(f); });
