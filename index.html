@@ -395,6 +395,8 @@ textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--ac
           <option value="custom">Custom</option>
         </select>
         <label class="swap-row" style="font-weight:500"><input type="checkbox" id="swEdit"> Adjust the art box by dragging its corners</label>
+        <button type="button" class="small" id="swRefit" style="align-self:flex-start">Snap art box to the card</button>
+        <p class="swap-note">The art box snaps to each card's art window when it loads. The dashed guide hides once art is added, so you can see the real edges.</p>
       </div>
 
       <h2>4. Save it</h2>
@@ -1179,7 +1181,7 @@ bOpts(); showMode(); route();
       ctx.drawImage(S.art, R.x + (R.w - dw) / 2 + S.ox * R.w, R.y + (R.h - dh) / 2 + S.oy * R.h, dw, dh);
     }
     ctx.restore();
-    if (overlay){
+    if (overlay && (!S.art || el("swEdit").checked)){
       ctx.save(); ctx.lineWidth = Math.max(2, W / 300); ctx.setLineDash([12, 8]);
       ctx.strokeStyle = S.art ? "rgba(255,255,255,.5)" : "rgba(217,71,43,.95)";
       ctx.strokeRect(R.x, R.y, R.w, R.h); ctx.setLineDash([]);
@@ -1200,9 +1202,26 @@ bOpts(); showMode(); route();
   window.__swapDraw = drawPreview;
   const showCard = () => { const b = cv.getBoundingClientRect(); if (b.bottom < 0 || b.top > innerHeight) cv.scrollIntoView({ behavior: "smooth", block: "center" }); };
 
-  function setFrame(f){ S.frame = f; el("swFrame").value = f; if (FRAMES[f]) S.rect = { ...FRAMES[f] }; drawPreview(); }
+  function setFrame(f){ S.frame = f; el("swFrame").value = f; if (FRAMES[f]) S.rect = { ...FRAMES[f] }; if (f === "mtg") autoFit(); drawPreview(); }
+  // Snap the art box to the card's real art window: the window is ringed by a thin dark line,
+  // so look for the darkest column/row near each side of the preset box. Leaves no old-art slivers.
+  function autoFit(){
+    if (!S.card) return;
+    try {
+      const W = S.card.naturalWidth, H = S.card.naturalHeight, c = document.createElement("canvas");
+      c.width = W; c.height = H; const x = c.getContext("2d", { willReadFrequently: true }); x.drawImage(S.card, 0, 0);
+      const px = x.getImageData(0, 0, W, H).data, lum = (i, j) => { const k = (j * W + i) * 4; return px[k] * .299 + px[k + 1] * .587 + px[k + 2] * .114; };
+      const R = FRAMES.mtg, x0 = R.x * W, y0 = R.y * H, x1 = (R.x + R.w) * W, y1 = (R.y + R.h) * H, r = Math.round(W / 50);
+      const colMean = i => { let s = 0, n = 0; for (let j = Math.round(y0 + (y1 - y0) * .2); j < y0 + (y1 - y0) * .8; j += 2){ s += lum(i, j); n++; } return s / n; };
+      const rowMean = j => { let s = 0, n = 0; for (let i = Math.round(x0 + (x1 - x0) * .2); i < x0 + (x1 - x0) * .8; i += 2){ s += lum(i, j); n++; } return s / n; };
+      const darkest = (f, c0, lim) => { let best = Math.round(c0), bv = 1e9; for (let i = Math.round(c0 - r); i <= Math.round(c0 + r); i++){ if (i < 0 || i >= lim) continue; const v = f(i); if (v < bv){ bv = v; best = i; } } return best; };
+      const L = darkest(colMean, x0, W), T = darkest(rowMean, y0, H), Rr = darkest(colMean, x1, W), B = darkest(rowMean, y1, H);
+      if (Rr - L > W * .6 && B - T > H * .3) S.rect = { x: L / W, y: T / H, w: (Rr - L + 1) / W, h: (B - T + 1) / H };
+    } catch (e) { /* image can't be read; keep the preset */ }
+  }
   el("swFrame").addEventListener("change", e => { setFrame(e.target.value); if (e.target.value === "custom") el("swEdit").checked = true; drawPreview(); });
   el("swEdit").addEventListener("change", drawPreview);
+  el("swRefit").addEventListener("click", () => { S.frame = "mtg"; el("swFrame").value = "mtg"; autoFit(); drawPreview(); status("Art box snapped to the card's art window."); });
   el("swFill").addEventListener("input", drawPreview);
   el("swClear").addEventListener("change", () => { el("swFill").disabled = el("swClear").checked; drawPreview(); });
 
