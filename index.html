@@ -1269,7 +1269,7 @@ bOpts(); showMode(); route();
         }
       }
       const pc = document.createElement("canvas"); pc.width = zw; pc.height = zh; pc.getContext("2d").putImageData(img, 0, 0);
-      t.patch = { canvas: pc, x: zx0, y: zy0, textX: zx0 + (first < zw ? first : CW * .01) };
+      t.patch = { canvas: pc, x: zx0, y: zy0, textX: Math.max(zx0 + (first < zw ? first : CW * .01), t.xl + CW * .035) };
     }
     ctx.drawImage(t.patch.canvas, t.patch.x * sx, t.patch.y * sy, t.patch.canvas.width * sx, t.patch.canvas.height * sy);
     // 2. the nickname, left-aligned where the old name started
@@ -1278,17 +1278,19 @@ bOpts(); showMode(); route();
     const nx = t.patch.textX * sx, maxW = (t.manaL - CW * .012) * sx - nx;
     fitFont(ctx, nick, Math.round(H * .036), maxW);
     ctx.fillText(nick, nx, ((t.y0 + t.y1) / 2) * sy + H * .002);
-    // 3. the real name on a dark banner tucked under the title bar, with slanted ends and frame-colored trim
+    // 3. the real name on a frame-trimmed plate fixed under the title bar (matches Universes Beyond flavor-name cards)
     if (real){
-      const top = (t.y1 + CH * .004) * sy, bh = H * .031, inset = W * .016;
-      const x0 = (t.xl + CW * .035) * sx, x1 = (t.xr - CW * .035) * sx;
-      const path = () => { ctx.beginPath(); ctx.moveTo(x0, top); ctx.lineTo(x1, top); ctx.lineTo(x1 - inset, top + bh); ctx.lineTo(x0 + inset, top + bh); ctx.closePath(); };
-      path(); ctx.fillStyle = "rgba(14,14,16,.93)"; ctx.fill();
-      const fc = t.frame; ctx.strokeStyle = `rgb(${fc[0]},${fc[1]},${fc[2]})`; ctx.lineWidth = Math.max(1.5, W / 330);
-      ctx.beginPath(); ctx.moveTo(x0, top); ctx.lineTo(x0 + inset, top + bh); ctx.lineTo(x1 - inset, top + bh); ctx.lineTo(x1, top); ctx.stroke();
-      let fs = Math.round(H * .021); ctx.font = `italic ${fs}px MPlantin, "Times New Roman", serif`;
-      while (fs > 8 && ctx.measureText(real).width > (x1 - x0) - inset * 3){ fs--; ctx.font = `italic ${fs}px MPlantin, "Times New Roman", serif`; }
-      ctx.fillStyle = "#f2efe8"; ctx.textAlign = "center"; ctx.fillText(real, (x0 + x1) / 2, top + bh / 2 + H * .001);
+      const top = (t.y1 - CH * .002) * sy, bh = H * .039, ch = H * .013, b = W * .010;
+      const x0 = (t.xl + CW * .055) * sx, x1 = (t.xr - CW * .055) * sx;
+      const plate = (i) => { ctx.beginPath(); ctx.moveTo(x0 + i, top); ctx.lineTo(x1 - i, top); ctx.lineTo(x1 - i, top + bh - ch - i * .4);
+        ctx.lineTo(x1 - ch - i * .4, top + bh - i); ctx.lineTo(x0 + ch + i * .4, top + bh - i); ctx.lineTo(x0 + i, top + bh - ch - i * .4); ctx.closePath(); };
+      const fc = t.frame, sh = (k) => `rgb(${fc.map(v => Math.max(0, Math.min(255, Math.round(v * k)))).join(",")})`;
+      plate(0); const g = ctx.createLinearGradient(0, top, 0, top + bh); g.addColorStop(0, sh(1.15)); g.addColorStop(.5, sh(1)); g.addColorStop(1, sh(.8));
+      ctx.fillStyle = g; ctx.fill(); ctx.strokeStyle = "rgba(0,0,0,.85)"; ctx.lineWidth = Math.max(1, W / 500); ctx.stroke();
+      plate(b); ctx.fillStyle = "#0d0d0f"; ctx.fill(); ctx.strokeStyle = "rgba(0,0,0,.9)"; ctx.stroke();
+      let fs = Math.round(H * .024); ctx.font = `italic ${fs}px MPlantin, "Times New Roman", serif`;
+      while (fs > 8 && ctx.measureText(real).width > (x1 - x0) - ch * 4){ fs--; ctx.font = `italic ${fs}px MPlantin, "Times New Roman", serif`; }
+      ctx.fillStyle = "#f4f1ea"; ctx.textAlign = "center"; ctx.fillText(real, (x0 + x1) / 2, top + (bh - b * .5) / 2 + H * .002);
     }
     ctx.restore();
   }
