@@ -1234,7 +1234,8 @@ bOpts(); showMode(); route();
       }
     }
     const lum = sm[sm.length >> 1].reduce((a, v, i) => a + v * [.299, .587, .114][i], 0);
-    return (S.title = { card: S.card, y0, y1, xl, xr, manaL, rows: sm, ink: lum < 110 ? "#f4f1ea" : "#111" });
+    const fk = (Math.round(H * .135) * W + Math.round(W * .045)) * 4, frame = [d[fk], d[fk + 1], d[fk + 2]];
+    return (S.title = { card: S.card, y0, y1, xl, xr, manaL, rows: sm, frame, ink: lum < 110 ? "#f4f1ea" : "#111" });
   }
   function fitFont(ctx, text, size, maxW){
     let s = size; ctx.font = `700 ${s}px "Beleren Bold", Alegreya, serif`;
@@ -1243,20 +1244,51 @@ bOpts(); showMode(); route();
   }
   function drawNick(ctx, W, H){
     const t = titleInfo(); if (!t) return;
-    const sx = W / S.card.naturalWidth, sy = H / S.card.naturalHeight, pad = W * .012;
-    const xl = t.xl * sx, x2 = t.manaL * sx - pad;
-    t.rows.forEach((c, k) => { ctx.fillStyle = `rgb(${c[0]},${c[1]},${c[2]})`; ctx.fillRect(xl, (t.y0 + k) * sy, x2 - xl, sy + .5); });
+    const CW = S.card.naturalWidth, CH = S.card.naturalHeight, sx = W / CW, sy = H / CH;
+    // 1. erase only the old name's letters: mask pixels that differ from the bar, then blend each
+    //    masked run with the bar texture on either side (keeps the rounded ends and the grain intact)
+    if (!t.patch){
+      const c = document.createElement("canvas"); c.width = CW; c.height = CH; const x = c.getContext("2d", { willReadFrequently: true });
+      x.drawImage(S.card, 0, 0);
+      const zx0 = Math.round(t.xl + CW * .02), zx1 = Math.round(t.manaL - CW * .008), zy0 = t.y0, zy1 = t.y1, zw = zx1 - zx0, zh = zy1 - zy0;
+      const img = x.getImageData(zx0, zy0, zw, zh), d = img.data, mask = new Uint8Array(zw * zh);
+      let first = zw;
+      for (let j = 0; j < zh; j++){ const r = t.rows[j]; for (let i = 0; i < zw; i++){ const k = (j * zw + i) * 4;
+        if (Math.abs(d[k] - r[0]) + Math.abs(d[k + 1] - r[1]) + Math.abs(d[k + 2] - r[2]) > 60){ mask[j * zw + i] = 1; if (i < first) first = i; } } }
+      const grown = mask.slice(); // grow the mask 2px to catch anti-aliased edges
+      for (let j = 0; j < zh; j++) for (let i = 0; i < zw; i++) if (mask[j * zw + i])
+        for (let dj = -3; dj <= 3; dj++) for (let di = -3; di <= 3; di++){ const jj = j + dj, ii = i + di; if (jj >= 0 && jj < zh && ii >= 0 && ii < zw) grown[jj * zw + ii] = 1; }
+      for (let j = 0; j < zh; j++){
+        let i = 0;
+        while (i < zw){
+          if (!grown[j * zw + i]){ i++; continue; }
+          let a = i; while (i < zw && grown[j * zw + i]) i++; const b = i; // masked run [a, b)
+          const L = a > 0 ? (j * zw + a - 1) * 4 : null, R = b < zw ? (j * zw + b) * 4 : null;
+          for (let q = a; q < b; q++){ const k = (j * zw + q) * 4, f = (q - a + 1) / (b - a + 1);
+            for (let ch = 0; ch < 3; ch++){ const lv = L != null ? d[L + ch] : t.rows[j][ch], rv = R != null ? d[R + ch] : t.rows[j][ch]; d[k + ch] = lv * (1 - f) + rv * f; } }
+        }
+      }
+      const pc = document.createElement("canvas"); pc.width = zw; pc.height = zh; pc.getContext("2d").putImageData(img, 0, 0);
+      t.patch = { canvas: pc, x: zx0, y: zy0, textX: zx0 + (first < zw ? first : CW * .01) };
+    }
+    ctx.drawImage(t.patch.canvas, t.patch.x * sx, t.patch.y * sy, t.patch.canvas.width * sx, t.patch.canvas.height * sy);
+    // 2. the nickname, left-aligned where the old name started
     const nick = el("swNickText").value.trim(), real = (el("swRealName").value || S.cardName || "").trim();
     ctx.save(); ctx.fillStyle = t.ink; ctx.textBaseline = "middle";
-    fitFont(ctx, nick, Math.round(H * .036), x2 - xl - pad);
-    ctx.fillText(nick, xl + pad, ((t.y0 + t.y1) / 2) * sy + H * .002);
+    const nx = t.patch.textX * sx, maxW = (t.manaL - CW * .012) * sx - nx;
+    fitFont(ctx, nick, Math.round(H * .036), maxW);
+    ctx.fillText(nick, nx, ((t.y0 + t.y1) / 2) * sy + H * .002);
+    // 3. the real name on a dark banner tucked under the title bar, with slanted ends and frame-colored trim
     if (real){
-      const fs = fitFont(ctx, real, Math.round(H * .019), (t.xr - t.xl) * sx * .7);
-      const tw = ctx.measureText(real).width, ph = fs * 1.55, px = xl + pad * .6, py = t.y1 * sy + H * .004;
-      const c = t.rows[t.rows.length >> 1];
-      ctx.fillStyle = `rgb(${c[0]},${c[1]},${c[2]})`; ctx.strokeStyle = "rgba(0,0,0,.75)"; ctx.lineWidth = Math.max(1.5, W / 400);
-      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(px, py, tw + pad * 1.6, ph, ph * .3) : ctx.rect(px, py, tw + pad * 1.6, ph); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = t.ink; ctx.fillText(real, px + pad * .8, py + ph / 2 + H * .001);
+      const top = (t.y1 + CH * .004) * sy, bh = H * .031, inset = W * .016;
+      const x0 = (t.xl + CW * .035) * sx, x1 = (t.xr - CW * .035) * sx;
+      const path = () => { ctx.beginPath(); ctx.moveTo(x0, top); ctx.lineTo(x1, top); ctx.lineTo(x1 - inset, top + bh); ctx.lineTo(x0 + inset, top + bh); ctx.closePath(); };
+      path(); ctx.fillStyle = "rgba(14,14,16,.93)"; ctx.fill();
+      const fc = t.frame; ctx.strokeStyle = `rgb(${fc[0]},${fc[1]},${fc[2]})`; ctx.lineWidth = Math.max(1.5, W / 330);
+      ctx.beginPath(); ctx.moveTo(x0, top); ctx.lineTo(x0 + inset, top + bh); ctx.lineTo(x1 - inset, top + bh); ctx.lineTo(x1, top); ctx.stroke();
+      let fs = Math.round(H * .021); ctx.font = `italic ${fs}px MPlantin, "Times New Roman", serif`;
+      while (fs > 8 && ctx.measureText(real).width > (x1 - x0) - inset * 3){ fs--; ctx.font = `italic ${fs}px MPlantin, "Times New Roman", serif`; }
+      ctx.fillStyle = "#f2efe8"; ctx.textAlign = "center"; ctx.fillText(real, (x0 + x1) / 2, top + bh / 2 + H * .001);
     }
     ctx.restore();
   }
