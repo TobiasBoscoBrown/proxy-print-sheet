@@ -1221,21 +1221,36 @@ bOpts(); showMode(); route();
       const m = a => a.sort((p, q) => p - q)[a.length >> 1]; rows.push([m(rs), m(gs), m(bs)]);
     }
     const sm = rows.map((r, i) => [0, 1, 2].map(ch => Math.round(((rows[i - 1] || r)[ch] + r[ch] + (rows[i + 1] || r)[ch]) / 3)));
-    // where the mana cost starts
-    let manaL = xr;
-    if (S.manaCount != null) manaL = S.manaCount ? Math.round(xr - S.manaCount * W * .0595) : xr;
-    else {
-      const ink = i => { let n = 0, t = 0; for (let j = y0; j < y1; j++){ const r = sm[j - y0], k = (j * W + i) * 4; if (Math.abs(d[k] - r[0]) + Math.abs(d[k + 1] - r[1]) + Math.abs(d[k + 2] - r[2]) > 120) n++; t++; } return n / t; };
-      let seen = false, gap = 0;
-      for (let i = xr - 2; i > xl; i--){
-        if (ink(i) > .06){ seen = true; gap = 0; manaL = i; }
-        else if (seen){ if (++gap >= W * .02) break; }
-        else if (xr - i > W * .12) break;
-      }
+    // where the mana cost starts: always measure it (symbol widths vary), the mana value only bounds the search
+    const ink = i => { let n = 0, t = 0; for (let j = y0; j < y1; j++){ const r = sm[j - y0], k = (j * W + i) * 4; if (Math.abs(d[k] - r[0]) + Math.abs(d[k + 1] - r[1]) + Math.abs(d[k + 2] - r[2]) > 60) n++; t++; } return n / t; };
+    let manaL = xr, seen = false, gap = 0;
+    for (let i = xr - 2; i > xl; i--){
+      if (ink(i) > .06){ seen = true; gap = 0; manaL = i; }
+      else if (seen){ if (++gap >= W * .012) break; }
+      else if (xr - i > W * .12) break;
     }
+    if (S.manaCount === 0) manaL = xr;
+    else if (S.manaCount){
+      let r = xr - 2; while (r > xl && ink(r) <= .06) r--;           // right edge of the last symbol
+      const lo = Math.round(r - S.manaCount * W * .062), hi = Math.round(r - S.manaCount * W * .045);
+      manaL = Math.min(Math.max(manaL, lo), hi);                    // symbols are ~5% of the card wide each
+    }
+    manaL = Math.max(manaL, Math.round(xl + W * .2));
+    // re-sample the bar colour left of the mana cost only, so many dark symbols can't skew it
+    if (manaL < xr - W * .05){
+      for (let j = y0; j < y1; j++){ const rs = [], gs = [], bs = [];
+        for (let i = xl; i < manaL - W * .01; i += 2){ const k = (j * W + i) * 4; rs.push(d[k]); gs.push(d[k + 1]); bs.push(d[k + 2]); }
+        const m = a => a.sort((p, q) => p - q)[a.length >> 1]; rows[j - y0] = [m(rs), m(gs), m(bs)]; }
+      for (let i = 0; i < rows.length; i++) sm[i] = [0, 1, 2].map(ch => Math.round(((rows[i - 1] || rows[i])[ch] + rows[i][ch] + (rows[i + 1] || rows[i])[ch]) / 3));
+    }
+    // real bottom of the title bar, including its dark outline, so the name plate never covers it
+    let barBot = y1;
+    { const cols = [.25, .35, .45].map(f => Math.round(xl + (xr - xl) * f)), bots = [];
+      for (const i of cols){ let j = ym; while (j < H * .13 && Math.abs(L(i, j) - med) < 60) j++; while (j < H * .13 && L(i, j) < 70) j++; bots.push(j); }
+      bots.sort((a, b) => a - b); barBot = Math.max(y1, Math.min(bots[1], Math.round(H * .112))); }
     const lum = sm[sm.length >> 1].reduce((a, v, i) => a + v * [.299, .587, .114][i], 0);
     const fk = (Math.round(H * .135) * W + Math.round(W * .045)) * 4, frame = [d[fk], d[fk + 1], d[fk + 2]];
-    return (S.title = { card: S.card, y0, y1, xl, xr, manaL, rows: sm, frame, ink: lum < 110 ? "#f4f1ea" : "#111" });
+    return (S.title = { card: S.card, y0, y1, barBot, xl, xr, manaL, rows: sm, frame, ink: lum < 110 ? "#f4f1ea" : "#111" });
   }
   function fitFont(ctx, text, size, maxW){
     let s = size; ctx.font = `700 ${s}px "Beleren Bold", Alegreya, serif`;
@@ -1250,7 +1265,7 @@ bOpts(); showMode(); route();
     if (!t.patch){
       const c = document.createElement("canvas"); c.width = CW; c.height = CH; const x = c.getContext("2d", { willReadFrequently: true });
       x.drawImage(S.card, 0, 0);
-      const zx0 = Math.round(t.xl + CW * .02), zx1 = Math.round(t.manaL - CW * .008), zy0 = t.y0, zy1 = t.y1, zw = zx1 - zx0, zh = zy1 - zy0;
+      const zx0 = Math.round(t.xl + CW * .02), zx1 = Math.round(t.manaL - CW * .006), zy0 = t.y0, zy1 = t.y1, zw = zx1 - zx0, zh = zy1 - zy0;
       const img = x.getImageData(zx0, zy0, zw, zh), d = img.data, mask = new Uint8Array(zw * zh);
       let first = zw;
       for (let j = 0; j < zh; j++){ const r = t.rows[j]; for (let i = 0; i < zw; i++){ const k = (j * zw + i) * 4;
@@ -1264,10 +1279,16 @@ bOpts(); showMode(); route();
           if (!grown[j * zw + i]){ i++; continue; }
           let a = i; while (i < zw && grown[j * zw + i]) i++; const b = i; // masked run [a, b)
           const L = a > 0 ? (j * zw + a - 1) * 4 : null, R = b < zw ? (j * zw + b) * 4 : null;
-          for (let q = a; q < b; q++){ const k = (j * zw + q) * 4, f = (q - a + 1) / (b - a + 1);
-            for (let ch = 0; ch < 3; ch++){ const lv = L != null ? d[L + ch] : t.rows[j][ch], rv = R != null ? d[R + ch] : t.rows[j][ch]; d[k + ch] = lv * (1 - f) + rv * f; } }
+          for (let q = a; q < b; q++){ const k = (j * zw + q) * 4, fl = Math.max(0, 1 - (q - a + 1) / 4), fr = Math.max(0, 1 - (b - q) / 4);
+            for (let ch = 0; ch < 3; ch++){ const m = t.rows[j][ch], lv = L != null ? d[L + ch] : m, rv = R != null ? d[R + ch] : m;
+              d[k + ch] = m * (1 - fl - fr) + lv * fl + rv * fr; } }
         }
       }
+      // soften the filled pixels vertically so no row stands out as a line
+      { const src = d.slice(), R = 4;
+        for (let i = 0; i < zw; i++) for (let j = 0; j < zh; j++){ if (!grown[j * zw + i]) continue;
+          const k = (j * zw + i) * 4; for (let ch = 0; ch < 3; ch++){ let s = 0, n = 0;
+            for (let q = Math.max(0, j - R); q <= Math.min(zh - 1, j + R); q++){ s += src[(q * zw + i) * 4 + ch]; n++; } d[k + ch] = s / n; } } }
       const pc = document.createElement("canvas"); pc.width = zw; pc.height = zh; pc.getContext("2d").putImageData(img, 0, 0);
       t.patch = { canvas: pc, x: zx0, y: zy0, textX: Math.max(zx0 + (first < zw ? first : CW * .01), t.xl + CW * .035) };
     }
@@ -1280,7 +1301,7 @@ bOpts(); showMode(); route();
     ctx.fillText(nick, nx, ((t.y0 + t.y1) / 2) * sy + H * .002);
     // 3. the real name on a frame-trimmed plate fixed under the title bar (matches Universes Beyond flavor-name cards)
     if (real){
-      const top = (t.y1 - CH * .002) * sy, bh = H * .039, ch = H * .013, b = W * .010;
+      const top = t.barBot * sy, bh = H * .039, ch = H * .013, b = W * .010;
       const x0 = (t.xl + CW * .055) * sx, x1 = (t.xr - CW * .055) * sx;
       const plate = (i) => { ctx.beginPath(); ctx.moveTo(x0 + i, top); ctx.lineTo(x1 - i, top); ctx.lineTo(x1 - i, top + bh - ch - i * .4);
         ctx.lineTo(x1 - ch - i * .4, top + bh - i); ctx.lineTo(x0 + ch + i * .4, top + bh - i); ctx.lineTo(x0 + i, top + bh - ch - i * .4); ctx.closePath(); };
