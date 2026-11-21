@@ -1201,6 +1201,7 @@ bOpts(); showMode(); route();
     }
   }
   // ---- nickname (Secret Lair style) ----
+  window.__swT = () => { const t = S.title; return t && { W: S.card.naturalWidth, H: S.card.naturalHeight, y0: t.y0, y1: t.y1, barBot: t.barBot, xl: t.xl, xr: t.xr, capEnd: t.capEnd, manaL: t.manaL, patchX: t.patch && t.patch.x, textX: t.patch && t.patch.textX }; };
   function titleInfo(){
     if (S.title && S.title.card === S.card) return S.title;
     const W = S.card.naturalWidth, H = S.card.naturalHeight, c = document.createElement("canvas");
@@ -1232,7 +1233,7 @@ bOpts(); showMode(); route();
     if (S.manaCount === 0) manaL = xr;
     else if (S.manaCount){
       let r = xr - 2; while (r > xl && ink(r) <= .06) r--;           // right edge of the last symbol
-      const lo = Math.round(r - S.manaCount * W * .062), hi = Math.round(r - S.manaCount * W * .045);
+      const lo = Math.round(r - S.manaCount * W * .0595 - W * .003), hi = Math.round(r - S.manaCount * W * .045);
       manaL = Math.min(Math.max(manaL, lo), hi);                    // symbols are ~5% of the card wide each
     }
     manaL = Math.max(manaL, Math.round(xl + W * .2));
@@ -1243,6 +1244,11 @@ bOpts(); showMode(); route();
         const m = a => a.sort((p, q) => p - q)[a.length >> 1]; rows[j - y0] = [m(rs), m(gs), m(bs)]; }
       for (let i = 0; i < rows.length; i++) sm[i] = [0, 1, 2].map(ch => Math.round(((rows[i - 1] || rows[i])[ch] + rows[i][ch] + (rows[i + 1] || rows[i])[ch]) / 3));
     }
+    // where the rounded left end of the bar stops: the first run of columns that match the bar colour top to bottom
+    let capEnd = Math.round(xl + W * .02);
+    { const ja = Math.round(y0 + (y1 - y0) * .2), jb = Math.round(y0 + (y1 - y0) * .8);
+      const okCol = i => { for (let j = ja; j < jb; j++){ const r = sm[j - y0], k = (j * W + i) * 4; if (Math.abs(d[k] - r[0]) + Math.abs(d[k + 1] - r[1]) + Math.abs(d[k + 2] - r[2]) > 70) return false; } return true; };
+      for (let i = Math.round(xl + W * .005), run = 0; i < xl + W * .06; i++){ if (okCol(i)){ if (++run >= 4){ capEnd = i - 3; break; } } else run = 0; } }
     // real bottom of the title bar, including its dark outline, so the name plate never covers it
     let barBot = y1;
     { const cols = [.25, .35, .45].map(f => Math.round(xl + (xr - xl) * f)), bots = [];
@@ -1250,7 +1256,7 @@ bOpts(); showMode(); route();
       bots.sort((a, b) => a - b); barBot = Math.max(y1, Math.min(bots[1], Math.round(H * .112))); }
     const lum = sm[sm.length >> 1].reduce((a, v, i) => a + v * [.299, .587, .114][i], 0);
     const fk = (Math.round(H * .135) * W + Math.round(W * .045)) * 4, frame = [d[fk], d[fk + 1], d[fk + 2]];
-    return (S.title = { card: S.card, y0, y1, barBot, xl, xr, manaL, rows: sm, frame, ink: lum < 110 ? "#f4f1ea" : "#111" });
+    return (S.title = { card: S.card, y0, y1, barBot, capEnd, xl, xr, manaL, rows: sm, frame, ink: lum < 110 ? "#f4f1ea" : "#111" });
   }
   function fitFont(ctx, text, size, maxW){
     let s = size; ctx.font = `700 ${s}px "Beleren Bold", Alegreya, serif`;
@@ -1265,32 +1271,59 @@ bOpts(); showMode(); route();
     if (!t.patch){
       const c = document.createElement("canvas"); c.width = CW; c.height = CH; const x = c.getContext("2d", { willReadFrequently: true });
       x.drawImage(S.card, 0, 0);
-      const zx0 = Math.round(t.xl + CW * .02), zx1 = Math.round(t.manaL - CW * .006), zy0 = t.y0, zy1 = t.y1, zw = zx1 - zx0, zh = zy1 - zy0;
+      const zx1 = Math.round(t.manaL - CW * .006), zy0 = t.y0, zy1 = t.y1, zh = zy1 - zy0;
+      // the erase starts just before the old name's first letter, so the rounded end of the bar is never touched
+      const minX = Math.round(CW * .077); // card names always start at about 8% of the card width, past the bar's rounded end
+      let textStart = minX;
+      { const wide = x.getImageData(minX, zy0, Math.max(1, zx1 - minX), zh).data, ww = Math.max(1, zx1 - minX);
+        outer: for (let i = 0; i < ww; i++) for (let j = Math.round(zh * .25); j < zh * .75; j++){ const r = t.rows[j], k = (j * ww + i) * 4;
+          if (Math.abs(wide[k] - r[0]) + Math.abs(wide[k + 1] - r[1]) + Math.abs(wide[k + 2] - r[2]) > 200){ textStart = minX + i; break outer; } } }
+      const zx0 = Math.max(minX, textStart - Math.round(CW * .006)), zw = Math.max(1, zx1 - zx0);
       const img = x.getImageData(zx0, zy0, zw, zh), d = img.data, mask = new Uint8Array(zw * zh);
+      const diff = (k, r) => Math.abs(d[k] - r[0]) + Math.abs(d[k + 1] - r[1]) + Math.abs(d[k + 2] - r[2]);
+      // bar colour per row from the pixels that aren't letters (two passes so dense names can't darken it)
+      let base = t.rows.slice(0, zh);
+      for (let pass = 0; pass < 2; pass++){
+        base = base.map((r, j) => { const m = [0, 0, 0]; let n = 0;
+          for (let i = 0; i < zw; i++){ const k = (j * zw + i) * 4; if (diff(k, r) <= 60){ m[0] += d[k]; m[1] += d[k + 1]; m[2] += d[k + 2]; n++; } }
+          return n > zw * .1 ? m.map(v => v / n) : r; });
+      }
+      const sb = base.map((r, i) => [0, 1, 2].map(ch => ((base[i - 1] || r)[ch] + r[ch] + (base[i + 1] || r)[ch]) / 3));
       let first = zw;
-      for (let j = 0; j < zh; j++){ const r = t.rows[j]; for (let i = 0; i < zw; i++){ const k = (j * zw + i) * 4;
-        if (Math.abs(d[k] - r[0]) + Math.abs(d[k + 1] - r[1]) + Math.abs(d[k + 2] - r[2]) > 60){ mask[j * zw + i] = 1; if (i < first) first = i; } } }
+      for (let j = 0; j < zh; j++){ const r = sb[j]; for (let i = 0; i < zw; i++){ const k = (j * zw + i) * 4;
+        if (diff(k, r) > 60){ mask[j * zw + i] = 1; if (i < first) first = i; } } }
       const grown = mask.slice(); // grow the mask 2px to catch anti-aliased edges
       for (let j = 0; j < zh; j++) for (let i = 0; i < zw; i++) if (mask[j * zw + i])
         for (let dj = -3; dj <= 3; dj++) for (let di = -3; di <= 3; di++){ const jj = j + dj, ii = i + di; if (jj >= 0 && jj < zh && ii >= 0 && ii < zw) grown[jj * zw + ii] = 1; }
-      for (let j = 0; j < zh; j++){
-        let i = 0;
-        while (i < zw){
-          if (!grown[j * zw + i]){ i++; continue; }
-          let a = i; while (i < zw && grown[j * zw + i]) i++; const b = i; // masked run [a, b)
-          const L = a > 0 ? (j * zw + a - 1) * 4 : null, R = b < zw ? (j * zw + b) * 4 : null;
-          for (let q = a; q < b; q++){ const k = (j * zw + q) * 4, fl = Math.max(0, 1 - (q - a + 1) / 4), fr = Math.max(0, 1 - (b - q) / 4);
-            for (let ch = 0; ch < 3; ch++){ const m = t.rows[j][ch], lv = L != null ? d[L + ch] : m, rv = R != null ? d[R + ch] : m;
-              d[k + ch] = m * (1 - fl - fr) + lv * fl + rv * fr; } }
-        }
-      }
-      // soften the filled pixels vertically so no row stands out as a line
-      { const src = d.slice(), R = 4;
-        for (let i = 0; i < zw; i++) for (let j = 0; j < zh; j++){ if (!grown[j * zw + i]) continue;
-          const k = (j * zw + i) * 4; for (let ch = 0; ch < 3; ch++){ let s = 0, n = 0;
-            for (let q = Math.max(0, j - R); q <= Math.min(zh - 1, j + R); q++){ s += src[(q * zw + i) * 4 + ch]; n++; } d[k + ch] = s / n; } } }
+      // where a letter reaches the bar's shaded top or bottom edge, erase that edge too, so the edge is rebuilt
+      // from the clean edge on either side instead of bleeding dark specks into the fill
+      for (let i = 0; i < zw; i++){ let lo = -1, hi = -1;
+        for (let j = 0; j < zh; j++) if (grown[j * zw + i]){ if (lo < 0) lo = j; hi = j; }
+        if (hi >= zh * .6) for (let j = hi; j < zh; j++) grown[j * zw + i] = 1;
+        if (lo >= 0 && lo <= zh * .4) for (let j = 0; j <= lo; j++) grown[j * zw + i] = 1; }
+      // rebuild each erased run from the bar around it: a smooth blend between the clean pixels on either side
+      // (averaged over a small window so no single row stands out), plus grain copied from a clean stretch of bar
+      const src = d.slice(), clean = (i, j) => i >= 0 && i < zw && j >= 0 && j < zh && !grown[j * zw + i];
+      const avg = (i0, i1, j, ch) => { let s = 0, n = 0; for (let q = j - 3; q <= j + 3; q++) for (let i = i0; i <= i1; i++) if (clean(i, q)){ s += src[(q * zw + i) * 4 + ch]; n++; } return n ? s / n : null; };
+      let best = 0, bestAt = 0, run = 0;
+      for (let i = 0; i < zw; i++){ let ok = true; for (let j = 0; j < zh; j++) if (grown[j * zw + i]){ ok = false; break; }
+        if (ok){ if (++run > best){ best = run; bestAt = i - run + 1; } } else run = 0; }
+      const tile = best >= 12 ? { a: bestAt, n: best } : null, rowMean = [];
+      if (tile) for (let j = 0; j < zh; j++){ const m = [0, 0, 0]; for (let i = tile.a; i < tile.a + tile.n; i++) for (let ch = 0; ch < 3; ch++) m[ch] += src[(j * zw + i) * 4 + ch]; rowMean.push(m.map(v => v / tile.n)); }
+      // fill the letters by smooth diffusion from the bar pixels around them (no row-by-row streaks), then add grain
+      { const n = zw * zh, idx = []; for (let p = 0; p < n; p++) if (grown[p]) idx.push(p);
+        const cur = [new Float32Array(n), new Float32Array(n), new Float32Array(n)];
+        for (let p = 0; p < n; p++) for (let ch = 0; ch < 3; ch++) cur[ch][p] = grown[p] ? sb[(p / zw) | 0][ch] : src[p * 4 + ch];
+        for (let it = 0; it < 260; it++) for (const p of idx){ const i = p % zw, j = (p / zw) | 0;
+          for (let ch = 0; ch < 3; ch++){ const c = cur[ch]; let s = 0, m = 0;
+            if (i > 0){ s += c[p - 1]; m++; } if (i < zw - 1){ s += c[p + 1]; m++; } if (j > 0){ s += c[p - zw] * 2; m += 2; } if (j < zh - 1){ s += c[p + zw] * 2; m += 2; }
+            c[p] = s / m; } }
+        for (const p of idx){ const i = p % zw, j = (p / zw) | 0, k = p * 4;
+          let sc = 0; if (tile){ let hsh = ((i >> 1) * 73856093) ^ ((j >> 1) * 19349663); hsh = (hsh ^ (hsh >>> 13)) >>> 0; sc = tile.a + hsh % tile.n; }
+          for (let ch = 0; ch < 3; ch++){ const edge = Math.min(j, zh - 1 - j) / (zh * .2), grain = tile ? (src[(j * zw + sc) * 4 + ch] - rowMean[j][ch]) * .7 * Math.min(1, edge) : 0;
+            d[k + ch] = Math.max(0, Math.min(255, cur[ch][p] + grain)); } } }
       const pc = document.createElement("canvas"); pc.width = zw; pc.height = zh; pc.getContext("2d").putImageData(img, 0, 0);
-      t.patch = { canvas: pc, x: zx0, y: zy0, textX: Math.max(zx0 + (first < zw ? first : CW * .01), t.xl + CW * .035) };
+      t.patch = { canvas: pc, x: zx0, y: zy0, textX: Math.max(textStart, CW * .08) };
     }
     ctx.drawImage(t.patch.canvas, t.patch.x * sx, t.patch.y * sy, t.patch.canvas.width * sx, t.patch.canvas.height * sy);
     // 2. the nickname, left-aligned where the old name started
