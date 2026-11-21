@@ -399,6 +399,13 @@ textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--ac
         <p class="swap-note">The art box snaps to each card's art window when it loads. The dashed guide hides once art is added, so you can see the real edges.</p>
       </div>
 
+      <div class="field">
+        <label class="swap-row" style="font-weight:600"><input type="checkbox" id="swNick"> Nickname (Secret Lair style)</label>
+        <input id="swNickText" type="text" placeholder="Nickname, like DIO" autocomplete="off" aria-label="Nickname">
+        <input id="swRealName" type="text" placeholder="Real card name" autocomplete="off" aria-label="Real card name">
+        <p class="swap-note">Puts the nickname in the title bar and the real card name in a small plate underneath, like Secret Lair and Universes Beyond cards.</p>
+      </div>
+
       <h2>4. Save it</h2>
       <button class="primary" id="swSave" disabled>Save PNG</button>
       <div class="swap-row">
@@ -1181,6 +1188,7 @@ bOpts(); showMode(); route();
       ctx.drawImage(S.art, R.x + (R.w - dw) / 2 + S.ox * R.w, R.y + (R.h - dh) / 2 + S.oy * R.h, dw, dh);
     }
     ctx.restore();
+    if (el("swNick").checked && el("swNickText").value.trim()) drawNick(ctx, W, H);
     if (overlay && (!S.art || el("swEdit").checked)){
       ctx.save(); ctx.lineWidth = Math.max(2, W / 300); ctx.setLineDash([12, 8]);
       ctx.strokeStyle = S.art ? "rgba(255,255,255,.5)" : "rgba(217,71,43,.95)";
@@ -1192,6 +1200,67 @@ bOpts(); showMode(); route();
       ctx.restore();
     }
   }
+  // ---- nickname (Secret Lair style) ----
+  function titleInfo(){
+    if (S.title && S.title.card === S.card) return S.title;
+    const W = S.card.naturalWidth, H = S.card.naturalHeight, c = document.createElement("canvas");
+    c.width = W; c.height = H; const x = c.getContext("2d", { willReadFrequently: true }); x.drawImage(S.card, 0, 0);
+    let d; try { d = x.getImageData(0, 0, W, H).data; } catch { return null; }
+    const L = (i, j) => { const k = (j * W + i) * 4; return d[k] * .299 + d[k + 1] * .587 + d[k + 2] * .114; };
+    const y0 = Math.round(H * .050), y1 = Math.round(H * .099), ym = Math.round((y0 + y1) / 2);
+    const mid = []; for (let i = Math.round(W * .3); i < W * .6; i++) for (let j = y0; j < y1; j += 3) mid.push(L(i, j));
+    mid.sort((a, b) => a - b); const med = mid[mid.length >> 1];
+    let xl = Math.round(W * .06), xr = Math.round(W * .94);
+    for (let i = Math.round(W * .03); i < W * .2; i++) if (Math.abs(L(i, ym) - med) < 45 && Math.abs(L(i + 3, ym) - med) < 45){ xl = i; break; }
+    for (let i = Math.round(W * .97); i > W * .8; i--) if (Math.abs(L(i, ym) - med) < 45 && Math.abs(L(i - 3, ym) - med) < 45){ xr = i; break; }
+    // per-row bar colour (median), lightly smoothed
+    const rows = [];
+    for (let j = y0; j < y1; j++){
+      const rs = [], gs = [], bs = [];
+      for (let i = xl; i < xr; i += 2){ const k = (j * W + i) * 4; rs.push(d[k]); gs.push(d[k + 1]); bs.push(d[k + 2]); }
+      const m = a => a.sort((p, q) => p - q)[a.length >> 1]; rows.push([m(rs), m(gs), m(bs)]);
+    }
+    const sm = rows.map((r, i) => [0, 1, 2].map(ch => Math.round(((rows[i - 1] || r)[ch] + r[ch] + (rows[i + 1] || r)[ch]) / 3)));
+    // where the mana cost starts
+    let manaL = xr;
+    if (S.manaCount != null) manaL = S.manaCount ? Math.round(xr - S.manaCount * W * .0595) : xr;
+    else {
+      const ink = i => { let n = 0, t = 0; for (let j = y0; j < y1; j++){ const r = sm[j - y0], k = (j * W + i) * 4; if (Math.abs(d[k] - r[0]) + Math.abs(d[k + 1] - r[1]) + Math.abs(d[k + 2] - r[2]) > 120) n++; t++; } return n / t; };
+      let seen = false, gap = 0;
+      for (let i = xr - 2; i > xl; i--){
+        if (ink(i) > .06){ seen = true; gap = 0; manaL = i; }
+        else if (seen){ if (++gap >= W * .02) break; }
+        else if (xr - i > W * .12) break;
+      }
+    }
+    const lum = sm[sm.length >> 1].reduce((a, v, i) => a + v * [.299, .587, .114][i], 0);
+    return (S.title = { card: S.card, y0, y1, xl, xr, manaL, rows: sm, ink: lum < 110 ? "#f4f1ea" : "#111" });
+  }
+  function fitFont(ctx, text, size, maxW){
+    let s = size; ctx.font = `700 ${s}px "Beleren Bold", Alegreya, serif`;
+    while (s > 8 && ctx.measureText(text).width > maxW){ s -= 1; ctx.font = `700 ${s}px "Beleren Bold", Alegreya, serif`; }
+    return s;
+  }
+  function drawNick(ctx, W, H){
+    const t = titleInfo(); if (!t) return;
+    const sx = W / S.card.naturalWidth, sy = H / S.card.naturalHeight, pad = W * .012;
+    const xl = t.xl * sx, x2 = t.manaL * sx - pad;
+    t.rows.forEach((c, k) => { ctx.fillStyle = `rgb(${c[0]},${c[1]},${c[2]})`; ctx.fillRect(xl, (t.y0 + k) * sy, x2 - xl, sy + .5); });
+    const nick = el("swNickText").value.trim(), real = (el("swRealName").value || S.cardName || "").trim();
+    ctx.save(); ctx.fillStyle = t.ink; ctx.textBaseline = "middle";
+    fitFont(ctx, nick, Math.round(H * .036), x2 - xl - pad);
+    ctx.fillText(nick, xl + pad, ((t.y0 + t.y1) / 2) * sy + H * .002);
+    if (real){
+      const fs = fitFont(ctx, real, Math.round(H * .019), (t.xr - t.xl) * sx * .7);
+      const tw = ctx.measureText(real).width, ph = fs * 1.55, px = xl + pad * .6, py = t.y1 * sy + H * .004;
+      const c = t.rows[t.rows.length >> 1];
+      ctx.fillStyle = `rgb(${c[0]},${c[1]},${c[2]})`; ctx.strokeStyle = "rgba(0,0,0,.75)"; ctx.lineWidth = Math.max(1.5, W / 400);
+      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(px, py, tw + pad * 1.6, ph, ph * .3) : ctx.rect(px, py, tw + pad * 1.6, ph); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = t.ink; ctx.fillText(real, px + pad * .8, py + ph / 2 + H * .001);
+    }
+    ctx.restore();
+  }
+
   function drawPreview(){
     if (!S.card){ blank(); return; }
     if (cv.width !== S.card.naturalWidth || cv.height !== S.card.naturalHeight){ cv.width = S.card.naturalWidth; cv.height = S.card.naturalHeight; }
@@ -1223,6 +1292,10 @@ bOpts(); showMode(); route();
   el("swEdit").addEventListener("change", drawPreview);
   el("swRefit").addEventListener("click", () => { S.frame = "mtg"; el("swFrame").value = "mtg"; autoFit(); drawPreview(); status("Art box snapped to the card's art window."); });
   el("swFill").addEventListener("input", drawPreview);
+  ["swNickText", "swRealName"].forEach(id => el(id).addEventListener("input", drawPreview));
+  el("swNick").addEventListener("change", () => { try { localStorage.setItem("swNick", el("swNick").checked ? "1" : ""); } catch {} drawPreview(); });
+  try { el("swNick").checked = localStorage.getItem("swNick") === "1"; } catch {}
+  document.fonts && document.fonts.ready.then(drawPreview);
   el("swClear").addEventListener("change", () => { el("swFill").disabled = el("swClear").checked; drawPreview(); });
 
   const loadImage = (src, cors) => new Promise((ok, bad) => { const im = new Image(); if (cors) im.crossOrigin = "anonymous"; im.onload = () => ok(im); im.onerror = bad; im.src = src; });
@@ -1246,6 +1319,8 @@ bOpts(); showMode(); route();
       if (!face){ status("That card has no image on Scryfall."); return; }
       const type = (c.type_line || "") + " " + ((c.card_faces && c.card_faces[0].type_line) || "");
       const odd = /Saga|Battle|Class|Case/.test(type) || c.border_color === "borderless" || c.full_art || (c.frame_effects || []).includes("showcase") || c.frame !== "2015";
+      S.manaCount = ((c.mana_cost || (c.card_faces && c.card_faces[0].mana_cost) || "").match(/\{[^}]+\}/g) || []).length;
+      el("swRealName").value = c.name;
       await useCard(face.png, c.name, "mtg", true);
       if (odd){ S.frame = "custom"; el("swFrame").value = "custom"; el("swEdit").checked = true; drawPreview(); status("Loaded " + c.name + ". It has an unusual frame, so drag the corners to fit the art box."); }
     } catch { status("Search failed. Check your connection and try again."); }
@@ -1254,6 +1329,7 @@ bOpts(); showMode(); route();
   el("swQ").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); findCard(); } });
   el("swCardFile").addEventListener("change", async e => {
     const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    S.manaCount = null; el("swRealName").value = "";
     await useCard(await readFile(f), f.name.replace(/\.[^.]+$/, ""), "mtg");
   });
 
@@ -1390,8 +1466,9 @@ bOpts(); showMode(); route();
     render(); setCopies(1);
     status("Added to the print sheet. Pick new art or a new card for the next one.");
   });
-  window.__swapLoad = async ({ card, art, artName }) => {
+  window.__swapLoad = async ({ card, art, artName, nick }) => {
     location.hash = "#art";
+    if (nick) el("swNickText").value = nick;
     el("swQ").value = card; await findCard();
     if (art){ setSrc(art.includes("/api/ygo-image") ? "ygo" : "file"); await useArt(art, artName, true); }
   };
@@ -1423,7 +1500,7 @@ bOpts(); showMode(); route();
   el("comGrid").addEventListener("click", e => {
     const b = e.target.closest("[data-make]"); if (!b) return;
     const c = data[deck][+b.dataset.make];
-    window.__swapLoad({ card: c.card, art: deck === "spencer" ? ygo(c.ygo, true) : c.art, artName: c.as });
+    window.__swapLoad({ card: c.card, art: deck === "spencer" ? ygo(c.ygo, true) : c.art, artName: c.as, nick: c.as.replace(/\s*\(.*?\)\s*/g, " ").trim() });
   });
   document.querySelectorAll("[data-com]").forEach(b => b.addEventListener("click", () => {
     deck = b.dataset.com; document.querySelectorAll("[data-com]").forEach(x => x.setAttribute("aria-pressed", x === b)); if (data) render();
