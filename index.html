@@ -137,6 +137,8 @@ textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--ac
 .swap-arts button{padding:0;border-radius:8px;overflow:hidden;border:2px solid var(--line);background:var(--chip);aspect-ratio:1}
 .swap-arts button[aria-pressed="true"]{border-color:var(--accent)}
 .swap-arts img{width:100%;height:100%;object-fit:cover;display:block}
+.swap-arts.prints{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));max-height:260px;overflow:auto}
+.swap-arts.prints button{aspect-ratio:63/88}
 @media (max-width:860px){#view-art .mat{order:-1}#view-art .swap-stage{min-height:0;padding:10px}#view-art .swap-stage canvas{max-height:46vh}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -354,6 +356,7 @@ textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--ac
         <input id="swQ" type="text" placeholder="Card name, like Sol Ring" autocomplete="off" aria-label="Magic card name">
         <button type="button" id="swFind">Find</button>
       </div>
+      <div id="swPrintsWrap" class="field" hidden><label>Printing <span id="swPrintsNote" class="swap-note"></span></label><div class="swap-arts prints" id="swPrints"></div></div>
       <label class="btn small" style="align-self:flex-start">Or upload a card image<input id="swCardFile" type="file" accept="image/*" hidden></label>
       <p class="swap-note">The old art is cleared out of the art box automatically.</p>
 
@@ -1188,7 +1191,7 @@ bOpts(); showMode(); route();
       ctx.drawImage(S.art, R.x + (R.w - dw) / 2 + S.ox * R.w, R.y + (R.h - dh) / 2 + S.oy * R.h, dw, dh);
     }
     ctx.restore();
-    if (el("swNick").checked && el("swNickText").value.trim()) drawNick(ctx, W, H);
+    if (el("swNick").checked && el("swNickText").value.trim() && S.nickOk !== false) drawNick(ctx, W, H);
     if (overlay && (!S.art || el("swEdit").checked)){
       ctx.save(); ctx.lineWidth = Math.max(2, W / 300); ctx.setLineDash([12, 8]);
       ctx.strokeStyle = S.art ? "rgba(255,255,255,.5)" : "rgba(217,71,43,.95)";
@@ -1201,7 +1204,7 @@ bOpts(); showMode(); route();
     }
   }
   // ---- nickname (Secret Lair style) ----
-  window.__swT = () => { const t = S.title; return t && { W: S.card.naturalWidth, H: S.card.naturalHeight, y0: t.y0, y1: t.y1, barBot: t.barBot, xl: t.xl, xr: t.xr, capEnd: t.capEnd, manaL: t.manaL, patchX: t.patch && t.patch.x, textX: t.patch && t.patch.textX }; };
+  window.__swT = () => { const t = S.title; return t && { W: S.card.naturalWidth, H: S.card.naturalHeight, y0: t.y0, y1: t.y1, barBot: t.barBot, xl: t.xl, xr: t.xr, capEnd: t.capEnd, manaL: t.manaL, patchX: t.patch && t.patch.x, textX: t.patch && t.patch.textX, dbg: t.patch && t.patch.dbg }; };
   function titleInfo(){
     if (S.title && S.title.card === S.card) return S.title;
     const W = S.card.naturalWidth, H = S.card.naturalHeight, c = document.createElement("canvas");
@@ -1269,72 +1272,102 @@ bOpts(); showMode(); route();
     // 1. erase only the old name's letters: mask pixels that differ from the bar, then blend each
     //    masked run with the bar texture on either side (keeps the rounded ends and the grain intact)
     if (!t.patch){
+      // Rebuild the stretch of title bar that held the old name. Modern (2015) frames put the bar, the name and the
+      // mana symbols in the same place on every card, so the stretch is taken from that layout:
+      // it starts just past the bar's rounded left end and stops just before the first mana symbol.
       const c = document.createElement("canvas"); c.width = CW; c.height = CH; const x = c.getContext("2d", { willReadFrequently: true });
       x.drawImage(S.card, 0, 0);
-      const zx1 = Math.round(t.manaL - CW * .006), zy0 = t.y0, zy1 = t.y1, zh = zy1 - zy0;
-      // the erase starts just before the old name's first letter, so the rounded end of the bar is never touched
-      const minX = Math.round(CW * .077); // card names always start at about 8% of the card width, past the bar's rounded end
-      let textStart = minX;
-      { const wide = x.getImageData(minX, zy0, Math.max(1, zx1 - minX), zh).data, ww = Math.max(1, zx1 - minX);
-        outer: for (let i = 0; i < ww; i++) for (let j = Math.round(zh * .25); j < zh * .75; j++){ const r = t.rows[j], k = (j * ww + i) * 4;
-          if (Math.abs(wide[k] - r[0]) + Math.abs(wide[k + 1] - r[1]) + Math.abs(wide[k + 2] - r[2]) > 200){ textStart = minX + i; break outer; } } }
-      const zx0 = Math.max(minX, textStart - Math.round(CW * .006)), zw = Math.max(1, zx1 - zx0);
-      const img = x.getImageData(zx0, zy0, zw, zh), d = img.data, mask = new Uint8Array(zw * zh);
-      const diff = (k, r) => Math.abs(d[k] - r[0]) + Math.abs(d[k + 1] - r[1]) + Math.abs(d[k + 2] - r[2]);
-      // bar colour per row from the pixels that aren't letters (two passes so dense names can't darken it)
-      let base = t.rows.slice(0, zh);
-      for (let pass = 0; pass < 2; pass++){
-        base = base.map((r, j) => { const m = [0, 0, 0]; let n = 0;
-          for (let i = 0; i < zw; i++){ const k = (j * zw + i) * 4; if (diff(k, r) <= 60){ m[0] += d[k]; m[1] += d[k + 1]; m[2] += d[k + 2]; n++; } }
-          return n > zw * .1 ? m.map(v => v / n) : r; });
+      const n = S.manaCount, m15 = S.cardFrame == null || S.cardFrame === "2015";
+      const ry0 = Math.round(CH * .0495), ry1 = Math.round(CH * .1045), rh = ry1 - ry0;
+      const rx0 = Math.round(CW * .072);
+      let rx1;
+      if (m15 && n != null) rx1 = n === 0 ? Math.round(CW * .90) : Math.round(CW * (.902 - (n - 1) * .0524 - .0285)) - 3;
+      else rx1 = Math.round(t.manaL - CW * .008);
+      const rw = Math.max(8, rx1 - rx0);
+      const img = x.getImageData(rx0, ry0, rw, rh), d = img.data, P = (i, j) => (j * rw + i) * 4, src = d.slice();
+      const med = a => { const b = a.slice().sort((p, q) => p - q); return b[b.length >> 1]; };
+      // bar colour per row, read from the strip between the rounded end and the first letter (always bare bar)
+      const lMin0 = Math.max(0, Math.round(CW * .075) - rx0), sampleCols = [];
+      for (let i = 0; i < Math.round(CW * .012) && i < rw; i++) sampleCols.push(i);
+      const prof = []; for (let j = 0; j < rh; j++){ const r = [], g = [], b = []; for (const i of sampleCols){ const k = P(i, j); r.push(d[k]); g.push(d[k + 1]); b.push(d[k + 2]); } prof.push([med(r), med(g), med(b)]); }
+      const dif = (k, v) => Math.abs(src[k] - v[0]) + Math.abs(src[k + 1] - v[1]) + Math.abs(src[k + 2] - v[2]);
+      const colBad = new Float32Array(rw);
+      const ja = Math.round(rh * .22), jb = Math.round(rh * .78);
+      for (let i = 0; i < rw; i++){ let nb = 0; for (let j = ja; j < jb; j++) if (dif(P(i, j), prof[j]) > 150) nb++; colBad[i] = nb / (jb - ja); }
+      const clean = i => colBad[i] < .03;
+      let ts = -1, te = -1; for (let i = 0; i < rw; i++) if (!clean(i)){ if (ts < 0) ts = i; te = i; }
+      if (ts < 0){ ts = 0; te = 0; }
+      // the bar's colour at the left and right ends of the stretch, row by row (from clean columns only)
+      const endCol = (a, b, j) => { const s = [0, 0, 0]; let k2 = 0;
+        for (let i = Math.max(0, a); i <= Math.min(rw - 1, b); i++){ if (!clean(i)) continue;
+          for (let q = Math.max(0, j - 1); q <= Math.min(rh - 1, j + 1); q++){ const k = P(i, q); s[0] += src[k]; s[1] += src[k + 1]; s[2] += src[k + 2]; k2++; } }
+        return k2 ? s.map(v => v / k2) : null; };
+      // per row, the bar colour from every pixel that isn't part of a letter (robust even for long names)
+      const rowClean = prof.map((v, j) => { const s = [0, 0, 0]; let c2 = 0; for (let i = 0; i < rw; i++){ const k = P(i, j); if (dif(k, v) <= 60){ s[0] += src[k]; s[1] += src[k + 1]; s[2] += src[k + 2]; c2++; } } return c2 ? s.map(q => q / c2) : v; });
+      const cleanCols = (a, b) => { let c2 = 0; for (let i = Math.max(0, a); i <= Math.min(rw - 1, b); i++) if (clean(i)) c2++; return c2; };
+      const pad = Math.round(CW * .006), ps = Math.max(0, ts - pad), pe = Math.min(rw - 1, te + pad);
+      const lMin = Math.max(0, Math.round(CW * .075) - rx0);
+      const useL = cleanCols(Math.max(lMin, ps - 10), ps - 1) >= 3, useR = pe + 8 < rw;
+      let Ls = [], Rs = [];
+      const vsm = a => a.map((v, j) => [0, 1, 2].map(ch => { let s = 0, c2 = 0; for (let q = j - 2; q <= j + 2; q++) if (a[q]){ s += a[q][ch]; c2++; } return s / c2; }));
+      for (let j = 0; j < rh; j++) Ls.push((useL && endCol(Math.max(lMin, ps - 10), ps - 1, j)) || prof[j]);
+      Ls = vsm(Ls);
+      // right end: the clean stretch after the name if there is one, else the bar showing between the last letters
+      for (let j = 0; j < rh; j++){
+        let v = null; if (useR){ const s = [0, 0, 0]; let c2 = 0; for (let i = pe + 1; i <= pe + 8; i++) for (let q = Math.max(0, j - 1); q <= Math.min(rh - 1, j + 1); q++){ const k = P(i, q); s[0] += src[k]; s[1] += src[k + 1]; s[2] += src[k + 2]; c2++; } v = s.map(q => q / c2); }
+        if (!v){ const s = [0, 0, 0]; let c2 = 0;
+          for (let i = Math.round(rw * .8); i < rw; i++) for (let q = Math.max(0, j - 1); q <= Math.min(rh - 1, j + 1); q++){ const k = P(i, q); if (dif(k, Ls[j]) <= 70){ s[0] += src[k]; s[1] += src[k + 1]; s[2] += src[k + 2]; c2++; } }
+          v = c2 >= 6 ? s.map(q => q / c2) : Ls[j]; }
+        Rs.push(v); }
+      Rs = vsm(Rs);
+      // fine grain like the printed bar: random speckle sized to the bar's own texture (no copied strips, so no lines)
+      let vs = 0, vc = 0; for (let j = 2; j < rh - 2; j++) for (let i = 0; i < rw; i++){ const k = P(i, j); if (dif(k, prof[j]) <= 60){ const dv = (src[k] + src[k + 1] + src[k + 2]) / 3 - (prof[j][0] + prof[j][1] + prof[j][2]) / 3; vs += dv * dv; vc++; } }
+      const amp = Math.min(14, Math.sqrt(vs / Math.max(1, vc)));
+      let seed = 1234567; const rnd = () => ((seed = (seed * 1103515245 + 12345) >>> 0) / 4294967296) - .5;
+      const noise = new Float32Array(rw * rh); for (let p2 = 0; p2 < noise.length; p2++) noise[p2] = rnd();
+      const nz = new Float32Array(rw * rh); // soften the speckle a touch
+      for (let j = 0; j < rh; j++) for (let i = 0; i < rw; i++){ let s = 0, c2 = 0; for (let dj = 0; dj <= 1; dj++) for (let di = 0; di <= 1; di++){ const jj = j + dj, ii = i + di; if (jj < rh && ii < rw){ s += noise[jj * rw + ii]; c2++; } } nz[j * rw + i] = s / c2 * 2 * 1.7; }
+      // how the bar's colour drifts from left to right (lighting, hybrid gradients), read from the rows just
+      // above and below the letters, which the name never covers
+      // the bar's typical colour in each row, from every pixel of the stretch that isn't a letter
+      let T = []; for (let j = 0; j < rh; j++){ const r = [], g = [], b = []; for (let i = ps; i <= pe; i++){ const k = P(i, j); if (dif(k, prof[j]) <= 150){ r.push(src[k]); g.push(src[k + 1]); b.push(src[k + 2]); } } T.push(r.length > 6 ? [med(r), med(g), med(b)] : Ls[j]); }
+      T = vsm(T);
+      const edgeRows = []; for (let j = 0; j < rh; j++){ const y = (ry0 + j) / CH; if ((y > .051 && y < .0575) || (y > .0985 && y < .1035)) edgeRows.push(j); }
+      const off = [], offN = [];
+      for (let i = 0; i < rw; i++){ const s = [0, 0, 0]; let c2 = 0;
+        for (const q of edgeRows){ const k = P(i, q); if (dif(k, T[q]) <= 150){ s[0] += src[k] - T[q][0]; s[1] += src[k + 1] - T[q][1]; s[2] += src[k + 2] - T[q][2]; c2++; } }
+        off.push(c2 ? s.map(v => v / c2) : null); offN.push(c2); }
+      const offS = off.map((v, i) => { const s = [0, 0, 0]; let c2 = 0; for (let q = i - 10; q <= i + 10; q++) if (off[q]){ s[0] += off[q][0]; s[1] += off[q][1]; s[2] += off[q][2]; c2++; } return c2 ? s.map(x => x / c2) : [0, 0, 0]; });
+      // when the name runs right up to the mana cost, match the sliver of bar left showing just before the symbols
+      const gd = x.getImageData(rx1, ry0, 3, rh).data, gapR = [];
+      for (let j = 0; j < rh; j++){ const s = [0, 0, 0]; let c2 = 0; for (let i = 0; i < 3; i++){ const k = (j * 3 + i) * 4, v = [gd[k], gd[k + 1], gd[k + 2]];
+          if (Math.abs(v[0] - T[j][0]) + Math.abs(v[1] - T[j][1]) + Math.abs(v[2] - T[j][2]) <= 150){ s[0] += v[0]; s[1] += v[1]; s[2] += v[2]; c2++; } } gapR.push(c2 ? s.map(q => q / c2) : null); }
+      const gapC = gapR.map((v, j) => { const s = [0, 0, 0]; let c2 = 0; for (let q = j - 2; q <= j + 2; q++) if (gapR[q]){ s[0] += gapR[q][0]; s[1] += gapR[q][1]; s[2] += gapR[q][2]; c2++; } return c2 ? s.map(z => z / c2) : null; });
+      const feather = Math.max(3, Math.round(CW * .006));
+      for (let j = 0; j < rh; j++){
+        const Lc = Ls[j], Rc = useR ? Rs[j] : (gapC[j] || [0, 1, 2].map(ch => T[j][ch] + offS[pe][ch]));
+        for (let i = ps; i <= pe; i++){
+          const k = P(i, j), f = Math.min(1, Math.max(0, (i - ts) / Math.max(1, te - ts)));
+          const w = Math.min(1, (i - ps + 1) / feather, (pe - i + 1) / feather), gr = nz[j * rw + i] * amp;
+          const span = 24, wl = Math.max(0, 1 - (i - ps) / span), wr = Math.max(0, 1 - (pe - i) / span), ws = wl + wr > 1 ? wl + wr : 1;
+          for (let ch = 0; ch < 3; ch++){ const mid = T[j][ch] + offS[i][ch];
+            const v = (mid * Math.max(0, 1 - wl - wr) + Lc[ch] * wl + Rc[ch] * wr) / (wl + wr > 1 ? ws : 1) + gr;
+            d[k + ch] = Math.max(0, Math.min(255, src[k + ch] * (1 - w) + v * w)); }
+        }
       }
-      const sb = base.map((r, i) => [0, 1, 2].map(ch => ((base[i - 1] || r)[ch] + r[ch] + (base[i + 1] || r)[ch]) / 3));
-      let first = zw;
-      for (let j = 0; j < zh; j++){ const r = sb[j]; for (let i = 0; i < zw; i++){ const k = (j * zw + i) * 4;
-        if (diff(k, r) > 60){ mask[j * zw + i] = 1; if (i < first) first = i; } } }
-      const grown = mask.slice(); // grow the mask 2px to catch anti-aliased edges
-      for (let j = 0; j < zh; j++) for (let i = 0; i < zw; i++) if (mask[j * zw + i])
-        for (let dj = -3; dj <= 3; dj++) for (let di = -3; di <= 3; di++){ const jj = j + dj, ii = i + di; if (jj >= 0 && jj < zh && ii >= 0 && ii < zw) grown[jj * zw + ii] = 1; }
-      // where a letter reaches the bar's shaded top or bottom edge, erase that edge too, so the edge is rebuilt
-      // from the clean edge on either side instead of bleeding dark specks into the fill
-      for (let i = 0; i < zw; i++){ let lo = -1, hi = -1;
-        for (let j = 0; j < zh; j++) if (grown[j * zw + i]){ if (lo < 0) lo = j; hi = j; }
-        if (hi >= zh * .6) for (let j = hi; j < zh; j++) grown[j * zw + i] = 1;
-        if (lo >= 0 && lo <= zh * .4) for (let j = 0; j <= lo; j++) grown[j * zw + i] = 1; }
-      // rebuild each erased run from the bar around it: a smooth blend between the clean pixels on either side
-      // (averaged over a small window so no single row stands out), plus grain copied from a clean stretch of bar
-      const src = d.slice(), clean = (i, j) => i >= 0 && i < zw && j >= 0 && j < zh && !grown[j * zw + i];
-      const avg = (i0, i1, j, ch) => { let s = 0, n = 0; for (let q = j - 3; q <= j + 3; q++) for (let i = i0; i <= i1; i++) if (clean(i, q)){ s += src[(q * zw + i) * 4 + ch]; n++; } return n ? s / n : null; };
-      let best = 0, bestAt = 0, run = 0;
-      for (let i = 0; i < zw; i++){ let ok = true; for (let j = 0; j < zh; j++) if (grown[j * zw + i]){ ok = false; break; }
-        if (ok){ if (++run > best){ best = run; bestAt = i - run + 1; } } else run = 0; }
-      const tile = best >= 12 ? { a: bestAt, n: best } : null, rowMean = [];
-      if (tile) for (let j = 0; j < zh; j++){ const m = [0, 0, 0]; for (let i = tile.a; i < tile.a + tile.n; i++) for (let ch = 0; ch < 3; ch++) m[ch] += src[(j * zw + i) * 4 + ch]; rowMean.push(m.map(v => v / tile.n)); }
-      // fill the letters by smooth diffusion from the bar pixels around them (no row-by-row streaks), then add grain
-      { const n = zw * zh, idx = []; for (let p = 0; p < n; p++) if (grown[p]) idx.push(p);
-        const cur = [new Float32Array(n), new Float32Array(n), new Float32Array(n)];
-        for (let p = 0; p < n; p++) for (let ch = 0; ch < 3; ch++) cur[ch][p] = grown[p] ? sb[(p / zw) | 0][ch] : src[p * 4 + ch];
-        for (let it = 0; it < 260; it++) for (const p of idx){ const i = p % zw, j = (p / zw) | 0;
-          for (let ch = 0; ch < 3; ch++){ const c = cur[ch]; let s = 0, m = 0;
-            if (i > 0){ s += c[p - 1]; m++; } if (i < zw - 1){ s += c[p + 1]; m++; } if (j > 0){ s += c[p - zw] * 2; m += 2; } if (j < zh - 1){ s += c[p + zw] * 2; m += 2; }
-            c[p] = s / m; } }
-        for (const p of idx){ const i = p % zw, j = (p / zw) | 0, k = p * 4;
-          let sc = 0; if (tile){ let hsh = ((i >> 1) * 73856093) ^ ((j >> 1) * 19349663); hsh = (hsh ^ (hsh >>> 13)) >>> 0; sc = tile.a + hsh % tile.n; }
-          for (let ch = 0; ch < 3; ch++){ const edge = Math.min(j, zh - 1 - j) / (zh * .2), grain = tile ? (src[(j * zw + sc) * 4 + ch] - rowMean[j][ch]) * .7 * Math.min(1, edge) : 0;
-            d[k + ch] = Math.max(0, Math.min(255, cur[ch][p] + grain)); } } }
-      const pc = document.createElement("canvas"); pc.width = zw; pc.height = zh; pc.getContext("2d").putImageData(img, 0, 0);
-      t.patch = { canvas: pc, x: zx0, y: zy0, textX: Math.max(textStart, CW * .08) };
+      const pc = document.createElement("canvas"); pc.width = rw; pc.height = rh; pc.getContext("2d").putImageData(img, 0, 0);
+      t.patch = { canvas: pc, x: rx0, y: ry0, textX: Math.max(rx0 + ts, CW * .084), cy: CH * .0745, right: rx1, dbg: { ts, te, rx0, rx1 } };
     }
     ctx.drawImage(t.patch.canvas, t.patch.x * sx, t.patch.y * sy, t.patch.canvas.width * sx, t.patch.canvas.height * sy);
     // 2. the nickname, left-aligned where the old name started
     const nick = el("swNickText").value.trim(), real = (el("swRealName").value || S.cardName || "").trim();
     ctx.save(); ctx.fillStyle = t.ink; ctx.textBaseline = "middle";
-    const nx = t.patch.textX * sx, maxW = (t.manaL - CW * .012) * sx - nx;
+    const nx = t.patch.textX * sx, maxW = (t.patch.right - CW * .006) * sx - nx;
     fitFont(ctx, nick, Math.round(H * .036), maxW);
-    ctx.fillText(nick, nx, ((t.y0 + t.y1) / 2) * sy + H * .002);
+    ctx.fillText(nick, nx, t.patch.cy * sy + H * .002);
     // 3. the real name on a frame-trimmed plate fixed under the title bar (matches Universes Beyond flavor-name cards)
     if (real){
-      const top = t.barBot * sy, bh = H * .039, ch = H * .013, b = W * .010;
+      const top = Math.max(t.barBot, CH * .1055) * sy, bh = H * .039, ch = H * .013, b = W * .010;
       const x0 = (t.xl + CW * .055) * sx, x1 = (t.xr - CW * .055) * sx;
       const plate = (i) => { ctx.beginPath(); ctx.moveTo(x0 + i, top); ctx.lineTo(x1 - i, top); ctx.lineTo(x1 - i, top + bh - ch - i * .4);
         ctx.lineTo(x1 - ch - i * .4, top + bh - i); ctx.lineTo(x0 + ch + i * .4, top + bh - i); ctx.lineTo(x0 + i, top + bh - ch - i * .4); ctx.closePath(); };
@@ -1397,27 +1430,55 @@ bOpts(); showMode(); route();
     status(S.art ? "Loaded " + name + "." : "Loaded " + name + ". Now pick the art.");
     showCard();
   }
+  async function loadPrint(c){
+    const face = c.image_uris || (c.card_faces && c.card_faces[0].image_uris);
+    if (!face){ status("That printing has no image on Scryfall."); return; }
+    const type = (c.type_line || "") + " " + ((c.card_faces && c.card_faces[0].type_line) || "");
+    const odd = /Saga|Battle|Class|Case/.test(type) || c.border_color === "borderless" || c.full_art || (c.frame_effects || []).includes("showcase") || c.frame !== "2015";
+    S.cardFrame = c.frame || null;
+    S.nickOk = c.frame === "2015" && !/Planeswalker|Saga|Battle|Class|Case/.test(type) && c.border_color !== "borderless" && !c.full_art;
+    S.manaCount = ((c.mana_cost || (c.card_faces && c.card_faces[0].mana_cost) || "").match(/\{[^}]+\}/g) || []).length;
+    el("swRealName").value = c.name;
+    await useCard(face.png, c.name, "mtg", true);
+    if (!S.nickOk && el("swNick").checked) status("Loaded " + c.name + ". Nicknames only work on regular modern frames, so pick a different printing to use one.");
+    if (odd){ S.frame = "custom"; el("swFrame").value = "custom"; el("swEdit").checked = true; drawPreview(); status("Loaded " + c.name + " (" + (c.set_name || c.set) + "). It has an unusual frame, so drag the corners to fit the art box."); }
+  }
+  // every printing of the card, newest first, as thumbnails to pick from
+  async function showPrints(c){
+    const wrap = el("swPrintsWrap"), box = el("swPrints"); box.innerHTML = ""; wrap.hidden = true;
+    try {
+      let url = c.prints_search_uri, all = [];
+      for (let pg = 0; url && pg < 3; pg++){ const r = await fetch(url); if (!r.ok) break; const j = await r.json(); all = all.concat(j.data || []); url = j.has_more ? j.next_page : null; }
+      all = all.filter(p => (p.image_uris || (p.card_faces && p.card_faces[0].image_uris)) && !p.digital);
+      if (all.length < 2) return;
+      el("swPrintsNote").textContent = all.length + " to choose from";
+      all.forEach(p => {
+        const im = p.image_uris || p.card_faces[0].image_uris, b = document.createElement("button");
+        b.type = "button"; b.title = (p.set_name || p.set) + " · " + (p.released_at || "").slice(0, 4) + (p.frame_effects && p.frame_effects.length ? " · " + p.frame_effects.join(", ") : "") + (p.border_color === "borderless" ? " · borderless" : "");
+        b.setAttribute("aria-label", c.name + ", " + b.title); b.setAttribute("aria-pressed", p.id === c.id);
+        const t = document.createElement("img"); t.loading = "lazy"; t.alt = ""; t.src = im.small; b.appendChild(t);
+        b.onclick = async () => { box.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); status("Loading " + b.title + "…"); await loadPrint(p); };
+        box.appendChild(b);
+      });
+      wrap.hidden = false;
+    } catch {}
+  }
   async function findCard(){
     const q = el("swQ").value.trim(); if (!q) return;
     status("Searching…");
     try {
       const r = await fetch("https://api.scryfall.com/cards/named?fuzzy=" + encodeURIComponent(q));
       if (!r.ok){ status("No Magic card by that name."); return; }
-      const c = await r.json(), face = c.image_uris || (c.card_faces && c.card_faces[0].image_uris);
-      if (!face){ status("That card has no image on Scryfall."); return; }
-      const type = (c.type_line || "") + " " + ((c.card_faces && c.card_faces[0].type_line) || "");
-      const odd = /Saga|Battle|Class|Case/.test(type) || c.border_color === "borderless" || c.full_art || (c.frame_effects || []).includes("showcase") || c.frame !== "2015";
-      S.manaCount = ((c.mana_cost || (c.card_faces && c.card_faces[0].mana_cost) || "").match(/\{[^}]+\}/g) || []).length;
-      el("swRealName").value = c.name;
-      await useCard(face.png, c.name, "mtg", true);
-      if (odd){ S.frame = "custom"; el("swFrame").value = "custom"; el("swEdit").checked = true; drawPreview(); status("Loaded " + c.name + ". It has an unusual frame, so drag the corners to fit the art box."); }
+      const c = await r.json();
+      await loadPrint(c);
+      showPrints(c);
     } catch { status("Search failed. Check your connection and try again."); }
   }
   el("swFind").addEventListener("click", findCard);
   el("swQ").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); findCard(); } });
   el("swCardFile").addEventListener("change", async e => {
     const f = e.target.files[0]; e.target.value = ""; if (!f) return;
-    S.manaCount = null; el("swRealName").value = "";
+    S.manaCount = null; S.cardFrame = null; S.nickOk = true; el("swRealName").value = ""; el("swPrintsWrap").hidden = true;
     await useCard(await readFile(f), f.name.replace(/\.[^.]+$/, ""), "mtg");
   });
 
