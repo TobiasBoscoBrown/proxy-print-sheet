@@ -379,6 +379,7 @@ textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--ac
   <div class="grid">
     <div class="panel">
       <h2>1. Pick the Magic card</h2>
+      <span class="seg" role="group" aria-label="Card or token" style="align-self:flex-start"><button type="button" id="swKindCard" aria-pressed="true">Card</button><button type="button" id="swKindTok" aria-pressed="false">Token</button></span>
       <div class="lookup">
         <input id="swQ" type="text" placeholder="Card name, like Sol Ring" autocomplete="off" aria-label="Magic card name">
         <button type="button" id="swFind">Find</button>
@@ -422,6 +423,7 @@ textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--ac
         <select id="swFrame">
           <option value="mtg">Regular frame</option>
           <option value="full">Whole card (full art)</option>
+          <option value="token">Token</option>
           <option value="custom">Custom</option>
         </select>
         <label class="swap-row" style="font-weight:500"><input type="checkbox" id="swEdit"> Adjust the art box by dragging its corners</label>
@@ -1329,6 +1331,10 @@ bOpts(); showMode(); route();
       ctx.drawImage(S.art, R.x + (R.w - dw) / 2 + S.ox * R.w, R.y + (R.h - dh) / 2 + S.oy * R.h, dw, dh);
     }
     ctx.restore();
+    if (S.token && S.keep && S.frame !== "full") S.keep.forEach(k => {
+      const x = k.x * W, y = k.y * H, w = k.w * W, h = k.h * H, r = Math.min(k.r * H, h / 2, w / 2);
+      ctx.save(); ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); ctx.clip(); ctx.drawImage(S.card, 0, 0, W, H); ctx.restore();
+    });
     if (el("swNick").checked && el("swNickText").value.trim() && S.nickOk !== false) drawNick(ctx, W, H);
     if (overlay && (!S.art || el("swEdit").checked)){
       ctx.save(); ctx.lineWidth = Math.max(2, W / 300); ctx.setLineDash([12, 8]);
@@ -1530,7 +1536,7 @@ bOpts(); showMode(); route();
   window.__swapDraw = drawPreview;
   const showCard = () => { const b = cv.getBoundingClientRect(); if (b.bottom < 0 || b.top > innerHeight) cv.scrollIntoView({ behavior: "smooth", block: "center" }); };
 
-  function setFrame(f){ S.frame = f; el("swFrame").value = f; if (FRAMES[f]) S.rect = { ...FRAMES[f] }; if (f === "mtg") autoFit(); drawPreview(); }
+  function setFrame(f){ S.frame = f; el("swFrame").value = f; if (f === "token"){ tokenFit(); drawPreview(); return; } if (FRAMES[f]) S.rect = { ...FRAMES[f] }; if (f === "mtg") autoFit(); drawPreview(); }
   // Snap the art box to the card's real art window: the window is ringed by a thin dark line,
   // so look for the darkest column/row near each side of the preset box. Leaves no old-art slivers.
   function autoFit(){
@@ -1547,9 +1553,64 @@ bOpts(); showMode(); route();
       if (Rr - L > W * .6 && B - T > H * .3) S.rect = { x: L / W, y: T / H, w: (Rr - L + 1) / W, h: (B - T + 1) / H };
     } catch (e) { /* image can't be read; keep the preset */ }
   }
+  // Tokens: the art runs from the top border down behind the name bar. Find the name bar, type line,
+  // text box and P/T box, put the art box behind them, and repaint those parts on top of the new art.
+  function tokenFit(){
+    S.keep = null;
+    if (!S.card) return;
+    try {
+      const W = S.card.naturalWidth, H = S.card.naturalHeight, c = document.createElement("canvas");
+      c.width = W; c.height = H; const g = c.getContext("2d", { willReadFrequently: true }); g.drawImage(S.card, 0, 0);
+      const px = g.getImageData(0, 0, W, H).data, at = (x, y, k) => px[(y * W + x) * 4 + k];
+      const lum = (x, y) => at(x, y, 0) * .299 + at(x, y, 1) * .587 + at(x, y, 2) * .114;
+      const first = (n, f) => { for (let i = 0; i < n; i++) if (f(i) > 45) return i; return 0; };
+      const bx0 = first(W * .2 | 0, i => lum(i, H * .5 | 0)), bx1 = W - 1 - first(W * .2 | 0, i => lum(W - 1 - i, H * .5 | 0));
+      const by0 = first(H * .2 | 0, i => lum(W * .3 | 0, i));
+      const by1 = H - 1 - Math.min(first(H * .2 | 0, i => lum(W * .3 | 0, H - 1 - i)), first(H * .2 | 0, i => lum(W * .5 | 0, H - 1 - i)));
+      // horizontal edge strength per row, sampled in two side windows that avoid centered text
+      const cols = []; for (let x = W * .10 | 0; x < W * .18; x++) cols.push(x); for (let x = W * .78 | 0; x < W * .86; x++) cols.push(x);
+      const D = new Float32Array(H);
+      for (let y = 0; y < H - 1; y++){ let s = 0; for (const x of cols) for (let k = 0; k < 3; k++) s += Math.abs(at(x, y + 1, k) - at(x, y, k)); D[y] = s / cols.length; }
+      const peaks = (y0, y1, n) => { const seg = Array.from(D.slice(y0, y1)), out = [], sep = Math.max(3, H * .008 | 0);
+        for (let t = 0; t < n; t++){ let bi = 0; seg.forEach((v, i) => { if (v > seg[bi]) bi = i; }); out.push([y0 + bi, seg[bi]]); for (let i = Math.max(0, bi - sep); i < Math.min(seg.length, bi + sep); i++) seg[i] = -1; } return out; };
+      const pair = (P, lo, hi) => { let b = null; P.forEach(([y, v]) => P.forEach(([y2, v2]) => { const h = y2 - y; if (h > lo && h < hi && (!b || v + v2 > b[0])) b = [v + v2, y, y2]; })); return b; };
+      const nb = pair(peaks(by0 + 2, H * .14 | 0, 6), H * .03, H * .075); if (!nb) throw 0;
+      const nh = nb[2] - nb[1];
+      const tb = pair(peaks(H * .45 | 0, by1 - (H * .02 | 0), 10), nh * .7, nh * 1.35); if (!tb) throw 0;
+      const [, n0, n1] = nb, [, t0, t1] = tb;
+      // left and right ends of a bar: strongest vertical edge near each side, inside the border
+      const ends = (y0, y1) => { const sx = x => { let s = 0, n = 0; for (let y = y0 + 2; y < y1 - 1; y += 2){ for (let k = 0; k < 3; k++) s += Math.abs(at(x + 1, y, k) - at(x, y, k)); n++; } return s / n; };
+        let L = bx0, Lv = 0, R = bx1, Rv = 0;
+        for (let x = bx0; x < bx0 + W * .07; x++){ const v = sx(x); if (v > Lv){ Lv = v; L = x; } }
+        for (let x = bx1 - (W * .07 | 0); x < bx1; x++){ const v = sx(x); if (v > Rv){ Rv = v; R = x + 1; } }
+        return [L, R]; };
+      const pad = Math.max(1, W / 400);
+      const box = (x0, y0, x1, y1, r) => ({ x: (x0 - pad) / W, y: (y0 - pad) / H, w: (x1 - x0 + 2 * pad) / W, h: (y1 - y0 + 2 * pad) / H, r });
+      const [nL, nR] = ends(n0, n1), [tL, tR] = ends(t0, t1);
+      const keep = [box(nL, n0, nR, n1, (n1 - n0) / H * .3), box(tL, t0, tR, t1, (t1 - t0) / H * .3)];
+      // a light, even area under the type line is a text box: the art stops at the type line
+      const vals = [];
+      for (let y = t1 + (H * .01 | 0); y < Math.min(by1, t1 + H * .07); y += 2) for (let x = W * .62 | 0; x < W * .90; x += 2) vals.push(lum(x, y));
+      vals.sort((a, b) => a - b);
+      const med = vals.length ? vals[vals.length >> 1] : 0, near = vals.filter(v => Math.abs(v - med) < 20).length / (vals.length || 1);
+      const textBox = vals.length && med > 120 && near > .8;
+      let bottom = textBox ? t1 : by1;
+      if (!textBox){
+        // P/T box hangs under the right end of the type line
+        const yA = t1 + (H * .012 | 0), yB = Math.min(by1 - 2, t1 + (H * .045 | 0));
+        const vx = x => { let s = 0, m = 0; for (let y = yA; y < yB; y += 2){ for (let k = 0; k < 3; k++) s += Math.abs(at(x + 1, y, k) - at(x, y, k)); m++; } return m ? s / m : 0; };
+        let pL = 0, pv = 0; for (let x = W * .62 | 0; x < W * .84; x++){ const v = vx(x); if (v > pv){ pv = v; pL = x; } }
+        const pR = tR, cx = pL + (W * .015 | 0);
+        let pB = by1, bv = 0; for (let y = t1 + (H * .03 | 0); y < by1; y++){ let s = 0; for (let x = cx; x < cx + W * .02; x++) for (let k = 0; k < 3; k++) s += Math.abs(at(x, y + 1, k) - at(x, y, k)); if (s > bv){ bv = s; pB = y + 1; } }
+        if (pL) keep.push(box(pL, t1 - 2, pR, pB, (pB - t1) / H * .25));
+      }
+      S.rect = { x: bx0 / W, y: by0 / H, w: (bx1 - bx0 + 1) / W, h: (bottom - by0 + 1) / H };
+      S.keep = keep;
+    } catch (e) { S.rect = { x: .045, y: .035, w: .91, h: .64 }; S.keep = null; }
+  }
   el("swFrame").addEventListener("change", e => { setFrame(e.target.value); if (e.target.value === "custom") el("swEdit").checked = true; drawPreview(); });
   el("swEdit").addEventListener("change", drawPreview);
-  el("swRefit").addEventListener("click", () => { S.frame = "mtg"; el("swFrame").value = "mtg"; autoFit(); drawPreview(); status("Art box snapped to the card's art window."); });
+  el("swRefit").addEventListener("click", () => { if (S.token){ setFrame("token"); status("Art box snapped to the token's art."); return; } S.frame = "mtg"; el("swFrame").value = "mtg"; autoFit(); drawPreview(); status("Art box snapped to the card's art window."); });
   el("swFill").addEventListener("input", drawPreview);
   ["swNickText", "swRealName"].forEach(id => el(id).addEventListener("input", drawPreview));
   el("swNick").addEventListener("change", () => { try { localStorage.setItem("swNick", el("swNick").checked ? "1" : ""); } catch {} drawPreview(); });
@@ -1572,6 +1633,14 @@ bOpts(); showMode(); route();
     const face = c.image_uris || (c.card_faces && c.card_faces[0].image_uris);
     if (!face){ status("That printing has no image on Scryfall."); return; }
     const type = (c.type_line || "") + " " + ((c.card_faces && c.card_faces[0].type_line) || "");
+    S.token = c.layout === "token" || /^Token\b/.test(c.type_line || "");
+    if (S.token){
+      S.cardFrame = null; S.nickOk = false; S.manaCount = 0; el("swRealName").value = c.name;
+      await useCard(face.png, c.name + " token", "token", true);
+      status("Loaded the " + c.name + " token" + (c.set_name ? " (" + c.set_name + ")" : "") + ". Now pick the art. The name bar, type line and P/T stay on top of it.");
+      return;
+    }
+    S.keep = null;
     const odd = /Saga|Battle|Class|Case/.test(type) || c.border_color === "borderless" || c.full_art || (c.frame_effects || []).includes("showcase") || c.frame !== "2015";
     S.cardFrame = c.frame || null;
     S.nickOk = c.frame === "2015" && !/Planeswalker|Saga|Battle|Class|Case/.test(type) && c.border_color !== "borderless" && !c.full_art;
@@ -1601,9 +1670,44 @@ bOpts(); showMode(); route();
       wrap.hidden = false;
     } catch {}
   }
+  let kind = "card";
+  const setKind = k => { kind = k; el("swKindCard").setAttribute("aria-pressed", k === "card"); el("swKindTok").setAttribute("aria-pressed", k === "token");
+    el("swQ").placeholder = k === "token" ? "Token name like Cat, or a card that makes tokens" : "Card name, like Sol Ring"; };
+  el("swKindCard").addEventListener("click", () => setKind("card"));
+  el("swKindTok").addEventListener("click", () => setKind("token"));
+  const tFace = t => t.image_uris || (t.card_faces && t.card_faces[0].image_uris);
+  async function tokSearch(q){ let url = "https://api.scryfall.com/cards/search?include_extras=true&unique=art&order=released&dir=desc&q=" + encodeURIComponent(q), all = [];
+    for (let pg = 0; url && pg < 3; pg++){ const r = await fetch(url); if (!r.ok) break; const j = await r.json(); all = all.concat(j.data || []); url = j.has_more ? j.next_page : null; }
+    return all.filter(t => tFace(t) && !t.digital); }
+  // tokens: a card that makes tokens shows every art of those tokens; otherwise search token names
+  async function findToken(q){
+    let list = [], note = "";
+    const r = await fetch("https://api.scryfall.com/cards/named?fuzzy=" + encodeURIComponent(q));
+    if (r.ok){ const c = await r.json();
+      const parts = (c.layout === "token" ? [] : (c.all_parts || [])).filter(p => p.component === "token" && p.id !== c.id);
+      for (const p of parts){ const t = await (await fetch(p.uri)).json();
+        let qq = 't:token !"' + t.name.replace(/"/g, "") + '"'; if (t.power != null) qq += " pow=" + t.power + " tou=" + t.toughness; qq += (t.colors || []).length ? " c=" + t.colors.join("") : " c=c";
+        const arts = await tokSearch(qq); list = list.concat(arts.length ? arts : [t]); }
+      if (list.length) note = c.name + "'s tokens";
+    }
+    if (!list.length){ list = await tokSearch("t:token " + q); note = "tokens"; }
+    const seen = new Set(); list = list.filter(t => !seen.has(t.id) && seen.add(t.id));
+    if (!list.length){ status("No tokens found for " + q + "."); return; }
+    const wrap = el("swPrintsWrap"), box = el("swPrints"); box.innerHTML = "";
+    el("swPrintsNote").textContent = list.length + " " + note + " to choose from";
+    list.forEach((t, i) => { const b = document.createElement("button"); b.type = "button";
+      b.title = t.name + " " + (t.power != null ? t.power + "/" + t.toughness + " " : "") + "· " + (t.set_name || t.set);
+      b.setAttribute("aria-label", b.title); b.setAttribute("aria-pressed", i === 0);
+      const im = document.createElement("img"); im.loading = "lazy"; im.alt = ""; im.src = tFace(t).small; b.appendChild(im);
+      b.onclick = async () => { box.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); await loadPrint(t); };
+      box.appendChild(b); });
+    wrap.hidden = false;
+    await loadPrint(list[0]);
+  }
   async function findCard(){
     const q = el("swQ").value.trim(); if (!q) return;
     status("Searching…");
+    if (kind === "token"){ try { await findToken(q); } catch { status("Search failed. Check your connection and try again."); } return; }
     try {
       const r = await fetch("https://api.scryfall.com/cards/named?fuzzy=" + encodeURIComponent(q));
       if (!r.ok){ status("No Magic card by that name."); return; }
@@ -1616,7 +1720,7 @@ bOpts(); showMode(); route();
   el("swQ").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); findCard(); } });
   el("swCardFile").addEventListener("change", async e => {
     const f = e.target.files[0]; e.target.value = ""; if (!f) return;
-    S.manaCount = null; S.cardFrame = null; S.nickOk = true; el("swRealName").value = ""; el("swPrintsWrap").hidden = true;
+    S.manaCount = null; S.cardFrame = null; S.nickOk = true; S.token = false; S.keep = null; el("swRealName").value = ""; el("swPrintsWrap").hidden = true;
     await useCard(await readFile(f), f.name.replace(/\.[^.]+$/, ""), "mtg");
   });
 
