@@ -133,6 +133,19 @@ textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--ac
 .com-why{font-size:.85rem;color:var(--muted);margin:0}
 .com-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
 .com-actions a,.com-actions button{font-size:.85rem}
+.tok{display:flex;flex-direction:column;gap:8px}
+.tok details{display:flex;flex-direction:column;gap:6px}
+.tok summary{cursor:pointer;font-weight:600;color:var(--muted)}
+.tok details[open]{display:flex}
+.tok details textarea{margin:6px 0}
+.tokgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;max-height:460px;overflow:auto}
+.tokgrid figure{margin:0;display:flex;flex-direction:column;gap:3px;min-width:0}
+.tokgrid .pick{padding:0;border-radius:6px;overflow:hidden;border:2px solid var(--line);background:var(--chip);aspect-ratio:63/88;position:relative}
+.tokgrid .pick[data-n]::after{content:attr(data-n);position:absolute;top:4px;right:4px;background:var(--accent);color:var(--accent-ink);font:600 .75rem var(--mono);border-radius:999px;padding:1px 7px}
+.tokgrid .pick img{width:100%;height:100%;object-fit:cover;display:block}
+.tokgrid figcaption{font-size:.75rem;line-height:1.25;color:var(--muted);overflow-wrap:anywhere}
+.tokgrid figcaption b{color:var(--ink);font-weight:600}
+.tokgrid .more{font-size:.72rem;padding:3px 6px;border-radius:7px}
 .swap-arts{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px}
 .swap-arts button{padding:0;border-radius:8px;overflow:hidden;border:2px solid var(--line);background:var(--chip);aspect-ratio:1}
 .swap-arts button[aria-pressed="true"]{border-color:var(--accent)}
@@ -162,6 +175,20 @@ textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--ac
         <input id="file" type="file" accept="image/*" multiple hidden>
       </div>
       <div class="items" id="items"></div>
+
+      <h2>Tokens</h2>
+      <div class="tok">
+        <div class="lookup">
+          <input id="tokQ" type="text" placeholder="Cat, Treasure, or a card like Jinnie Fay" autocomplete="off" aria-label="Token or card name">
+          <button type="button" id="tokFind">Find</button>
+        </div>
+        <details id="tokDeckWrap"><summary>Every token a deck list makes</summary>
+          <textarea id="tokDeck" rows="5" placeholder="Paste a deck list, one card per line&#10;1 Jinnie Fay, Jetmir's Second&#10;1 Raise the Alarm"></textarea>
+          <button type="button" id="tokDeckBtn">Find the deck's tokens</button>
+        </details>
+        <p class="hint" id="tokStatus" role="status">Tap a token to add it to the sheet. Tap again for another copy.</p>
+        <div class="tokgrid" id="tokGrid"></div>
+      </div>
 
       <h2>Sheet</h2>
       <div class="settings">
@@ -650,6 +677,117 @@ function renderItems(){
   });
 }
 SETTINGS.forEach(id => $(id).addEventListener("change", render));
+
+// ---- tokens: search Scryfall tokens, or find the tokens a card or deck list makes ----
+(() => {
+  const SF = "https://api.scryfall.com", st = t => $("tokStatus").textContent = t;
+  const face = c => c.image_uris || (c.card_faces && c.card_faces[0].image_uris);
+  const pt = c => c.power != null ? c.power + "/" + c.toughness : "";
+  const CN = { W: "white", U: "blue", B: "black", R: "red", G: "green" };
+  const cols = c => (c.colors || []).length ? c.colors.map(k => CN[k] || k).join("-") : "colorless";
+  const desc = c => [pt(c), cols(c)].filter(Boolean).join(" · ");
+  const added = {};
+  async function getJson(url){ const r = await fetch(url); if (!r.ok) return null; return r.json(); }
+  async function search(q, max = 120){
+    let url = SF + "/cards/search?include_extras=true&unique=art&order=released&dir=desc&q=" + encodeURIComponent(q), all = [];
+    while (url && all.length < max){ const j = await getJson(url); if (!j) break; all = all.concat(j.data || []); url = j.has_more ? j.next_page : null; }
+    return all.filter(c => face(c) && !c.digital);
+  }
+  async function addToken(c, btn){
+    const im = face(c); if (!im) return;
+    const key = c.id;
+    const have = items.find(i => i.tokenId === key);
+    if (have){ have.copies = Math.min(99, have.copies + 1); btn.dataset.n = have.copies; render(); renderItems(); return; }
+    st("Adding " + c.name + "…");
+    try {
+      const blob = await (await fetch(im.png || im.large)).blob();
+      const url = await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(blob); });
+      items = items.filter(i => !i.sample);
+      $("csize").value = "mtg";
+      addItem(url, c.name + " token" + (pt(c) ? " " + pt(c) : ""));
+      const it = items[items.length - 1]; it.tokenId = key; it.fit = "fill";
+      btn.dataset.n = 1; render(); renderItems();
+      st("Added " + c.name + ". Tap again for another copy, or use the − and + under Cards.");
+    } catch { st("Couldn't load that token image. Try again in a moment."); }
+  }
+  function show(list, note){
+    const g = $("tokGrid"); g.innerHTML = "";
+    list.forEach(({ c, by }) => {
+      const f = document.createElement("figure"), b = document.createElement("button"), im = document.createElement("img");
+      b.type = "button"; b.className = "pick"; b.setAttribute("aria-label", "Add " + c.name + " token " + desc(c));
+      const n = items.find(i => i.tokenId === c.id); if (n) b.dataset.n = n.copies;
+      im.loading = "lazy"; im.alt = ""; im.src = face(c).normal || face(c).small; b.appendChild(im);
+      b.onclick = () => addToken(c, b);
+      const cap = document.createElement("figcaption");
+      cap.innerHTML = "<b></b><br><span></span>" + (by ? "<br><i></i>" : "");
+      cap.querySelector("b").textContent = c.name; cap.querySelector("span").textContent = desc(c);
+      if (by) cap.querySelector("i").textContent = "From " + by;
+      const more = document.createElement("button"); more.type = "button"; more.className = "more small"; more.textContent = "More art";
+      more.onclick = () => moreArt(c);
+      f.append(b, cap, more); g.appendChild(f);
+    });
+    st(note);
+  }
+  // other printings of the same token: same name, power, toughness and colors
+  async function moreArt(c){
+    st("Finding other art for " + c.name + "…");
+    let q = 't:token !"' + c.name.replace(/"/g, "") + '"';
+    if (c.power != null) q += " pow=" + c.power + " tou=" + c.toughness;
+    q += (c.colors || []).length ? " c=" + c.colors.join("") : " c=c";
+    const list = await search(q);
+    if (!list.length){ st("No other art found for " + c.name + "."); return; }
+    show(list.map(x => ({ c: x })), list.length + " versions of " + c.name + " " + desc(c) + ". Tap one to add it.");
+  }
+  async function tokensOf(cards){
+    const ids = new Map();
+    cards.forEach(card => (card.all_parts || []).forEach(p => { if (p.component === "token" && p.id !== card.id){ const e = ids.get(p.id) || { id: p.id, by: [] }; if (!e.by.includes(card.name)) e.by.push(card.name); ids.set(p.id, e); } }));
+    const out = [], list = [...ids.values()];
+    for (let i = 0; i < list.length; i += 75){
+      const r = await fetch(SF + "/cards/collection", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ identifiers: list.slice(i, i + 75).map(e => ({ id: e.id })) }) });
+      if (!r.ok) continue;
+      const j = await r.json();
+      (j.data || []).forEach(t => { const e = ids.get(t.id); if (face(t)) out.push({ c: t, by: e.by.join(", ") }); });
+    }
+    // one entry per distinct token (name, P/T, colors)
+    const seen = new Map();
+    out.forEach(o => { const k = o.c.name + "|" + pt(o.c) + "|" + cols(o.c); if (seen.has(k)){ const s = seen.get(k); s.by = [...new Set((s.by + ", " + o.by).split(", "))].join(", "); } else seen.set(k, o); });
+    return [...seen.values()].sort((a, b) => a.c.name.localeCompare(b.c.name));
+  }
+  async function find(){
+    const q = $("tokQ").value.trim(); if (!q) return;
+    st("Searching…");
+    try {
+      // a real card that makes tokens shows its tokens; otherwise search token names
+      const card = await getJson(SF + "/cards/named?fuzzy=" + encodeURIComponent(q));
+      if (card && card.layout !== "token" && (card.all_parts || []).some(p => p.component === "token")){
+        const list = await tokensOf([card]);
+        if (list.length){ show(list, card.name + " makes " + list.length + (list.length === 1 ? " token" : " different tokens") + ". Tap More art for other versions."); return; }
+      }
+      const list = await search("t:token " + q);
+      if (!list.length){ st("No tokens found for " + q + "."); $("tokGrid").innerHTML = ""; return; }
+      show(list.map(c => ({ c })), list.length + " tokens found. Tap one to add it.");
+    } catch { st("Couldn't reach Scryfall. Try again in a moment."); }
+  }
+  async function findDeck(){
+    const names = [...new Set($("tokDeck").value.split(/\n/).map(l => l.trim().replace(/^\d+x?\s+/i, "").replace(/\s*\(.*$/, "").replace(/\s+\*.*$/, "")).filter(Boolean))];
+    if (!names.length) return;
+    st("Looking up " + names.length + " cards…");
+    try {
+      let cards = [], missing = [];
+      for (let i = 0; i < names.length; i += 75){
+        const r = await fetch(SF + "/cards/collection", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ identifiers: names.slice(i, i + 75).map(n => ({ name: n })) }) });
+        if (!r.ok) continue;
+        const j = await r.json(); cards = cards.concat(j.data || []); missing = missing.concat((j.not_found || []).map(x => x.name));
+      }
+      const list = await tokensOf(cards);
+      if (!list.length){ st("None of those cards make tokens."); $("tokGrid").innerHTML = ""; return; }
+      show(list, "This deck makes " + list.length + " different tokens." + (missing.length ? " Couldn't find: " + missing.join(", ") + "." : "") + " Tap More art for other versions.");
+    } catch { st("Couldn't reach Scryfall. Try again in a moment."); }
+  }
+  $("tokFind").addEventListener("click", find);
+  $("tokQ").addEventListener("keydown", e => { if (e.key === "Enter") find(); });
+  $("tokDeckBtn").addEventListener("click", findDeck);
+})();
 
 function buildPdf(){
   const S = settings(), list = slots();
