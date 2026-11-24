@@ -133,6 +133,20 @@ textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--ac
 .com-why{font-size:.85rem;color:var(--muted);margin:0}
 .com-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
 .com-actions a,.com-actions button{font-size:.85rem}
+.inv-top{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px;align-items:start;margin:0 0 22px}
+@media (max-width:760px){.inv-top{grid-template-columns:1fr}}
+.inv-top img{width:100%;border-radius:12px;display:block;border:1px solid var(--line)}
+.inv-notes{background:var(--panel,#fff);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.inv-notes ul{margin:8px 0 12px;padding-left:18px;font-size:.9rem;line-height:1.45}
+.inv-sw{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.inv-sw span{display:flex;flex-direction:column;align-items:center;gap:4px;font:600 .72rem ui-monospace,monospace;color:var(--muted)}
+.inv-sw i{width:44px;height:44px;border-radius:8px;border:1px solid var(--line);display:block}
+.inv-h{font-size:1.05rem;margin:18px 0 10px}
+.inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.inv-card{background:var(--panel,#fff);border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.inv-card img{width:100%;border-radius:8px;display:block}
+.inv-card h3{font-size:.95rem;margin:0}
+.inv-card p{font-size:.78rem;color:var(--muted);margin:0}
 .tok{display:flex;flex-direction:column;gap:8px}
 .tok details{display:flex;flex-direction:column;gap:6px}
 .tok summary{cursor:pointer;font-weight:600;color:var(--muted)}
@@ -456,7 +470,7 @@ textarea:focus-visible,input[type=text]:focus-visible{outline:2px solid var(--ac
   <section id="view-commissions" hidden>
     <div class="com-head">
       <h2>Commissions</h2>
-      <div class="seg" role="group" aria-label="Deck"><button type="button" data-com="spencer" aria-pressed="true">Spencer · Yu-Gi-Oh!</button><button type="button" data-com="alex" aria-pressed="false">Alex · JoJo</button></div>
+      <div class="seg" role="group" aria-label="Deck"><button type="button" data-com="spencer" aria-pressed="true">Spencer · Yu-Gi-Oh!</button><button type="button" data-com="alex" aria-pressed="false">Alex · JoJo</button><button type="button" data-com="invite" aria-pressed="false">Christmas invite</button></div>
     </div>
     <p class="swap-note" id="comNote" style="margin:0 0 14px"></p>
     <div class="com-grid" id="comGrid"></div>
@@ -1873,7 +1887,22 @@ bOpts(); showMode(); route();
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
   const proxied = location.protocol.startsWith("http") && /vercel\.app$|localhost/.test(location.hostname);
   const ygo = (id, crop) => proxied ? "/api/ygo-image?" + (crop ? "crop=1&" : "") + "id=" + id : "https://images.ygoprodeck.com/images/" + (crop ? "cards_cropped/" : "cards/") + id + ".jpg";
+  function renderInvite(){
+    const v = data.invite, grid = el("comGrid");
+    el("comNote").textContent = "The Magic of the Holidays invitation: the mock-up, plus card art to work from. Tap any image to open it full size.";
+    const card = c => `<article class="inv-card"><img loading="lazy" src="${esc(c.art)}" alt="${esc(c.card)} art"><h3>${esc(c.card)}</h3><p>Art by ${esc(c.artist)} · ${esc(c.set)}</p>
+      <div class="com-actions"><a class="btn small primary" href="${esc(c.art)}" download="${esc(c.card + " - art.jpg")}">Download art</a><a class="btn small" href="${esc(c.card_img)}" download="${esc(c.card + " - full card.jpg")}">Full card</a></div></article>`;
+    grid.style.display = "block";
+    grid.innerHTML = `<div class="inv-top"><a href="${esc(v.mockup)}" target="_blank" rel="noopener"><img src="${esc(v.mockup)}" alt="Magic of the Holidays invitation mock-up"></a>
+      <div class="inv-notes"><h3 style="margin:0">Notes for the invite</h3><ul>${v.notes.map(n => `<li>${esc(n)}</li>`).join("")}</ul>
+      <div class="inv-sw">${v.palette.map(h => `<span><i style="background:${esc(h)}"></i>${esc(h)}</span>`).join("")}</div>
+      <div class="com-actions"><a class="btn small primary" href="${esc(v.mockup)}" download="Magic of the Holidays - invite mock-up.png">Download mock-up</a></div></div></div>
+      <h3 class="inv-h">The four cards on the mock-up</h3><div class="inv-grid">${v.cards.filter(c => c.group === "featured").map(card).join("")}</div>
+      <h3 class="inv-h">More festive art from the cube</h3><div class="inv-grid">${v.cards.filter(c => c.group === "extra").map(card).join("")}</div>`;
+  }
   function render(){
+    if (deck === "invite") return renderInvite();
+    el("comGrid").style.display = "";
     const list = data[deck], grid = el("comGrid");
     el("comNote").textContent = deck === "spencer"
       ? "Spencer's 30: each Magic card and the Yu-Gi-Oh! card it becomes. Make it opens Art swap with that card and art loaded."

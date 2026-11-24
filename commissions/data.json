@@ -422,5 +422,151 @@
    "why": "Returns everything to zero. Hides your creature, then can wipe the board.",
    "art": "commissions/alex/30.jpg"
   }
- ]
+ ],
+ "invite": {
+  "mockup": "commissions/invite/invite-mockup.png",
+  "notes": [
+   "This is a mock-up made to show the layout and the words. Make it your own.",
+   "[Time] and [Place] are still blank on purpose.",
+   "Fonts in the mock-up: Mountains of Christmas (title), Cormorant Garamond (italic lines and rule titles), Inter (everything else). All free on Google Fonts.",
+   "Colors: deep pine green #0F2A22, gold #C9A24A, berry red #8E1F1F, cream #F6EFE0."
+  ],
+  "palette": [
+   "#0F2A22",
+   "#1F5A46",
+   "#C9A24A",
+   "#8E1F1F",
+   "#F6EFE0"
+  ],
+  "cards": [
+   {
+    "card": "Linvala, the Preserver",
+    "group": "featured",
+    "set": "Oath of the Gatewatch",
+    "artist": "Magali Villeneuve",
+    "card_img": "commissions/invite/linvala-the-preserver-card.jpg",
+    "art": "commissions/invite/linvala-the-preserver-art.jpg"
+   },
+   {
+    "card": "Ginger, Queen of Sweets",
+    "group": "featured",
+    "set": "Reality Fracture Commander",
+    "artist": "Arif Wijaya",
+    "card_img": "commissions/invite/ginger-queen-of-sweets-card.jpg",
+    "art": "commissions/invite/ginger-queen-of-sweets-art.jpg"
+   },
+   {
+    "card": "Rimefur Reindeer",
+    "group": "featured",
+    "set": "Wilds of Eldraine",
+    "artist": "Lucas Graciano",
+    "card_img": "commissions/invite/rimefur-reindeer-card.jpg",
+    "art": "commissions/invite/rimefur-reindeer-art.jpg"
+   },
+   {
+    "card": "Aegar, the Freezing Flame",
+    "group": "featured",
+    "set": "Kaldheim",
+    "artist": "WolfSkullJack",
+    "card_img": "commissions/invite/aegar-the-freezing-flame-card.jpg",
+    "art": "commissions/invite/aegar-the-freezing-flame-art.jpg"
+   },
+   {
+    "card": "Gingerbread Hunter",
+    "group": "extra",
+    "set": "Wilds of Eldraine",
+    "artist": "Milivoj \u0106eran",
+    "card_img": "commissions/invite/gingerbread-hunter-card.jpg",
+    "art": "commissions/invite/gingerbread-hunter-art.jpg"
+   },
+   {
+    "card": "Tough Cookie",
+    "group": "extra",
+    "set": "Foundations Jumpstart",
+    "artist": "Milivoj \u0106eran",
+    "card_img": "commissions/invite/tough-cookie-card.jpg",
+    "art": "commissions/invite/tough-cookie-art.jpg"
+   },
+   {
+    "card": "Gallant Pie-Wielder",
+    "group": "extra",
+    "set": "Wilds of Eldraine",
+    "artist": "Matt Forsyth",
+    "card_img": "commissions/invite/gallant-pie-wielder-card.jpg",
+    "art": "commissions/invite/gallant-pie-wielder-art.jpg"
+   },
+   {
+    "card": "Bake into a Pie",
+    "group": "extra",
+    "set": "Foundations",
+    "artist": "Zoltan Boros",
+    "card_img": "commissions/invite/bake-into-a-pie-card.jpg",
+    "art": "commissions/invite/bake-into-a-pie-art.jpg"
+   },
+   {
+    "card": "Merry Bards",
+    "group": "extra",
+    "set": "Wilds of Eldraine",
+    "artist": "Iris Compiet",
+    "card_img": "commissions/invite/merry-bards-card.jpg",
+    "art": "commissions/invite/merry-bards-art.jpg"
+   },
+   {
+    "card": "Highspire Bell-Ringer",
+    "group": "extra",
+    "set": "Tarkir: Dragonstorm",
+    "artist": "Zoltan Boros",
+    "card_img": "commissions/invite/highspire-bell-ringer-card.jpg",
+    "art": "commissions/invite/highspire-bell-ringer-art.jpg"
+   },
+   {
+    "card": "Lake-town Toymaker",
+    "group": "extra",
+    "set": "The Hobbit",
+    "artist": "Marina Ortega Lorente",
+    "card_img": "commissions/invite/lake-town-toymaker-card.jpg",
+    "art": "commissions/invite/lake-town-toymaker-art.jpg"
+   },
+   {
+    "card": "Gift of Paradise",
+    "group": "extra",
+    "set": "Commander 2021",
+    "artist": "Ryan Pancoast",
+    "card_img": "commissions/invite/gift-of-paradise-card.jpg",
+    "art": "commissions/invite/gift-of-paradise-art.jpg"
+   },
+   {
+    "card": "Star-Crowned Stag",
+    "group": "extra",
+    "set": "The List",
+    "artist": "Jonathan Kuo",
+    "card_img": "commissions/invite/star-crowned-stag-card.jpg",
+    "art": "commissions/invite/star-crowned-stag-art.jpg"
+   },
+   {
+    "card": "Sweettooth Witch",
+    "group": "extra",
+    "set": "Wilds of Eldraine",
+    "artist": "Konstantin Porubov",
+    "card_img": "commissions/invite/sweettooth-witch-card.jpg",
+    "art": "commissions/invite/sweettooth-witch-art.jpg"
+   },
+   {
+    "card": "Greta, Sweettooth Scourge",
+    "group": "extra",
+    "set": "Wilds of Eldraine",
+    "artist": "Steve Prescott",
+    "card_img": "commissions/invite/greta-sweettooth-scourge-card.jpg",
+    "art": "commissions/invite/greta-sweettooth-scourge-art.jpg"
+   },
+   {
+    "card": "Tawnos, the Toymaker",
+    "group": "extra",
+    "set": "Magic Online Promos",
+    "artist": "Livia Prima",
+    "card_img": "commissions/invite/tawnos-the-toymaker-card.jpg",
+    "art": "commissions/invite/tawnos-the-toymaker-art.jpg"
+   }
+  ]
+ }
 }
